@@ -1,0 +1,161 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #020617, #1e3a8a);
+}
+
+.app {
+  min-height: 100vh;
+  padding: 40px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  width: 100%;
+  max-width: 1000px;
+  background: white;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+
+.hero {
+  padding: 45px;
+  text-align: center;
+  background: linear-gradient(135deg, #eff6ff, #ffffff);
+}
+
+.small-title {
+  color: #2563eb;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.hero h1 {
+  font-size: 46px;
+  color: #020617;
+  margin-bottom: 12px;
+}
+
+.hero p {
+  font-size: 18px;
+  color: #64748b;
+}
+
+.language-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 25px;
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.language-buttons button {
+  border: none;
+  background: white;
+  color: #0f172a;
+  padding: 16px 30px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+}
+
+.language-buttons button.active {
+  background: #2563eb;
+  color: white;
+}
+
+.course {
+  padding: 35px;
+}
+
+.course h2 {
+  font-size: 32px;
+  color: #020617;
+}
+
+.course p {
+  margin-top: 10px;
+  margin-bottom: 25px;
+  color: #64748b;
+  font-size: 17px;
+}
+
+.lessons {
+  display: grid;
+  gap: 15px;
+}
+
+.lesson {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  transition: 0.25s;
+}
+
+.lesson:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.12);
+}
+
+.lesson span {
+  width: 42px;
+  height: 42px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 900;
+}
+
+.lesson h3 {
+  flex: 1;
+  color: #0f172a;
+}
+
+.lesson button {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .hero h1 {
+    font-size: 34px;
+  }
+
+  .language-buttons {
+    flex-direction: column;
+  }
+
+  .lesson {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lesson button {
+    width: 100%;
+  }
+}
