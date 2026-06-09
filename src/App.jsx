@@ -17,6 +17,7 @@ const courses = {
       "Real Website Projects",
     ],
   },
+
   arabic: {
     label: "🇸🇦 العربية",
     title: "دورة تطوير الويب",
@@ -32,6 +33,7 @@ const courses = {
       "مشاريع مواقع حقيقية",
     ],
   },
+
   somali: {
     label: "🇸🇴 Somali",
     title: "Koorsada Horumarinta Webka",
@@ -50,47 +52,76 @@ const courses = {
 };
 
 function App() {
-  const [language, setLanguage] = useState("english");
-  const course = courses[language];
+  const [page, setPage] = useState("home");
+
+  if (page === "home") {
+    return (
+      <main className="app">
+        <section className="card">
+          <header className="hero">
+            <p className="small-title">REACT JS ES6 PLATFORM</p>
+
+            <h1>Dr. Faizel Academy</h1>
+
+            <p>
+              Professional multilingual learning platform using reusable
+              React components and mapping.
+            </p>
+          </header>
+
+          <div className="language-buttons">
+            <button onClick={() => setPage("english")}>
+              🇺🇸 English
+            </button>
+
+            <button onClick={() => setPage("arabic")}>
+              🇸🇦 العربية
+            </button>
+
+            <button onClick={() => setPage("somali")}>
+              🇸🇴 Somali
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  const course = courses[page];
 
   return (
     <main className="app">
       <section className="card">
+
         <header className="hero">
-          <p className="small-title">React JS ES6 Platform</p>
-          <h1>Dr. Faizel Academy</h1>
-          <p>
-            Professional multilingual learning platform using reusable React
-            components and mapping.
-          </p>
+          <p className="small-title">REACT JS ES6 PLATFORM</p>
+          <h1>{course.title}</h1>
+          <p>{course.desc}</p>
         </header>
 
-        <div className="language-buttons">
-          {Object.keys(courses).map((key) => (
-            <button
-              key={key}
-              onClick={() => setLanguage(key)}
-              className={language === key ? "active" : ""}
-            >
-              {courses[key].label}
-            </button>
-          ))}
-        </div>
-
         <section className="course">
-          <h2>{course.title}</h2>
-          <p>{course.desc}</p>
+
+          <button
+            className="back-btn"
+            onClick={() => setPage("home")}
+          >
+            ← Back to Home
+          </button>
 
           <div className="lessons">
             {course.lessons.map((lesson, index) => (
               <div className="lesson" key={lesson}>
                 <span>{index + 1}</span>
+
                 <h3>{lesson}</h3>
+
                 <button>Resources</button>
               </div>
             ))}
           </div>
+
         </section>
+
       </section>
     </main>
   );
