@@ -1,33 +1,85 @@
-function Registration() {
+const registrationText = {
+  English: {
+    title: "Student Registration",
+    note: "Register students for Dr. Faizal School courses.",
+    name: "Full Name",
+    email: "Email Address",
+    phone: "Phone Number",
+    language: "Select Language",
+    course: "Select Course",
+    payment: "Payment Status",
+    pending: "Pending",
+    paid: "Paid",
+    button: "Register Student",
+  },
+  Arabic: {
+    title: "تسجيل الطلاب",
+    note: "تسجيل الطلاب في دورات مدرسة د. فيصل.",
+    name: "الاسم الكامل",
+    email: "البريد الإلكتروني",
+    phone: "رقم الهاتف",
+    language: "اختر اللغة",
+    course: "اختر الدورة",
+    payment: "حالة الدفع",
+    pending: "قيد الانتظار",
+    paid: "مدفوع",
+    button: "تسجيل الطالب",
+  },
+  Somali: {
+    title: "Diiwaangelinta Ardayga",
+    note: "Ku diiwaangeli ardayda koorsooyinka Dugsiga Dr. Faizal.",
+    name: "Magaca Buuxa",
+    email: "Email-ka",
+    phone: "Lambarka Telefoonka",
+    language: "Dooro Luuqadda",
+    course: "Dooro Koorsada",
+    payment: "Xaaladda Lacagta",
+    pending: "Wali Lama Bixin",
+    paid: "Waa La Bixiyay",
+    button: "Diiwaangeli Ardayga",
+  },
+};
+
+function Registration({ language }) {
+  const text = registrationText[language];
+
   return (
     <main className="page-container">
       <section className="form-box">
-        <h2>Student Registration</h2>
-        <p className="form-note">
-          Register a student for Dr. Faizal School courses.
-        </p>
+        <h2>{text.title}</h2>
+        <p className="form-note">{text.note}</p>
 
         <form>
-          <input type="text" placeholder="Full Name" required />
-          <input type="email" placeholder="Email Address" required />
-          <input type="tel" placeholder="Phone Number" required />
+          <input type="text" placeholder={text.name} required />
+          <input type="email" placeholder={text.email} required />
+          <input type="tel" placeholder={text.phone} required />
 
-          <select required>
-            <option value="">Select Course</option>
-            <option value="Full Web Development">Full Web Development - 3000 ETB</option>
-            <option value="HTML Basics">HTML Basics - 1000 ETB</option>
-            <option value="CSS Styling">CSS Styling - 1500 ETB</option>
-            <option value="JavaScript">JavaScript - 2000 ETB</option>
-            <option value="React Development">React Development - 2500 ETB</option>
+          <select defaultValue={language} required>
+            <option value="English">English</option>
+            <option value="Arabic">العربية</option>
+            <option value="Somali">Soomaali</option>
           </select>
 
           <select required>
-            <option value="">Payment Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Paid">Paid</option>
+            <option value="">{text.course}</option>
+            <option value="Full Web Development">
+              Full Web Development - 3000 ETB
+            </option>
+            <option value="Arabic Web Development">
+              دورة تطوير الويب الكاملة - 3000 ETB
+            </option>
+            <option value="Somali Web Development">
+              Koorsada Web Development-ka Buuxa - 3000 ETB
+            </option>
           </select>
 
-          <button type="submit">Register Student</button>
+          <select required>
+            <option value="">{text.payment}</option>
+            <option value="Pending">{text.pending}</option>
+            <option value="Paid">{text.paid}</option>
+          </select>
+
+          <button type="submit">{text.button}</button>
         </form>
       </section>
     </main>

@@ -9,6 +9,7 @@ import Payments from "./pages/Payments";
 
 function App() {
   const [page, setPage] = useState("home");
+  const [language, setLanguage] = useState("English");
 
   return (
     <div>
@@ -21,12 +22,41 @@ function App() {
         <button onClick={() => setPage("payments")}>Payments</button>
       </nav>
 
-      {page === "home" && <Home />}
-      {page === "courses" && <Courses />}
-      {page === "register" && <Register />}
+      <div className="language-switcher">
+        <button
+          className={language === "English" ? "active-lang" : ""}
+          onClick={() => setLanguage("English")}
+        >
+          English
+        </button>
+
+        <button
+          className={language === "Arabic" ? "active-lang" : ""}
+          onClick={() => setLanguage("Arabic")}
+        >
+          العربية
+        </button>
+
+        <button
+          className={language === "Somali" ? "active-lang" : ""}
+          onClick={() => setLanguage("Somali")}
+        >
+          Soomaali
+        </button>
+      </div>
+
+      {page === "home" && <Home setPage={setPage} language={language} />}
+      {page === "courses" && <Courses setPage={setPage} language={language} />}
+      {page === "register" && <Register language={language} />}
       {page === "student" && <StudentDashboard />}
       {page === "admin" && <AdminDashboard />}
       {page === "payments" && <Payments />}
+
+      <footer className="footer">
+        <p>Dr. Faizal School</p>
+        <p>English | العربية | Soomaali</p>
+        <small>© 2026 All Rights Reserved</small>
+      </footer>
     </div>
   );
 }
