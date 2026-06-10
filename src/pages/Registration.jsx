@@ -33,14 +33,16 @@ const courseOptions = {
   ],
 };
 
-function Registration({ language, setPage }) {
+function Registration({ language = "English", setPage }) {
+  const selectedLanguage = language || "English";
+
   const [form, setForm] = useState({
     fullName: "",
     email: "",
     phone: "",
-    language,
+    language: selectedLanguage,
     course: "",
-    feeAmount: 0,
+    feeAmount: "",
     paymentStatus: "Pending",
   });
 
@@ -50,11 +52,11 @@ function Registration({ language, setPage }) {
   useEffect(() => {
     setForm((previous) => ({
       ...previous,
-      language,
+      language: selectedLanguage,
       course: "",
-      feeAmount: 0,
+      feeAmount: "",
     }));
-  }, [language]);
+  }, [selectedLanguage]);
 
   function getStudents() {
     return JSON.parse(localStorage.getItem("students")) || [];
@@ -66,17 +68,26 @@ function Registration({ language, setPage }) {
     return `DFS-2026-${String(nextNumber).padStart(4, "0")}`;
   }
 
+  function handleLanguageChange(e) {
+    setForm({
+      ...form,
+      language: e.target.value,
+      course: "",
+      feeAmount: "",
+    });
+  }
+
   function handleCourseChange(e) {
     const selectedCourse = e.target.value;
 
-    const selected = courseOptions[form.language].find(
+    const selected = courseOptions[form.language]?.find(
       (course) => course.value === selectedCourse
     );
 
     setForm({
       ...form,
       course: selectedCourse,
-      feeAmount: selected ? selected.fee : 0,
+      feeAmount: selected ? selected.fee : "",
     });
   }
 
@@ -142,16 +153,16 @@ function Registration({ language, setPage }) {
       );
 
       setMessage(
-        `Registered successfully. Student ID: ${newStudent.studentId}. Saved to Google Sheet and emails sent.`
+        `✅ Registered successfully. Student ID: ${newStudent.studentId}. Saved and emails sent.`
       );
 
       setForm({
         fullName: "",
         email: "",
         phone: "",
-        language,
+        language: selectedLanguage,
         course: "",
-        feeAmount: 0,
+        feeAmount: "",
         paymentStatus: "Pending",
       });
 
@@ -160,7 +171,7 @@ function Registration({ language, setPage }) {
       console.error("Registration error:", error);
 
       setMessage(
-        "Student saved locally, but Google Sheet or email failed. Check Apps Script and EmailJS."
+        "❌ Student saved locally, but Google Sheet or email failed. Check Apps Script and EmailJS."
       );
     } finally {
       setSending(false);
@@ -208,18 +219,7 @@ function Registration({ language, setPage }) {
             required
           />
 
-          <select
-            value={form.language}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                language: e.target.value,
-                course: "",
-                feeAmount: 0,
-              })
-            }
-            required
-          >
+          <select value={form.language} onChange={handleLanguageChange} required>
             <option value="English">English</option>
             <option value="Arabic">العربية</option>
             <option value="Somali">Soomaali</option>
@@ -228,14 +228,19 @@ function Registration({ language, setPage }) {
           <select value={form.course} onChange={handleCourseChange} required>
             <option value="">Select Course</option>
 
-            {courseOptions[form.language].map((course) => (
+            {(courseOptions[form.language] || []).map((course) => (
               <option key={course.value} value={course.value}>
                 {course.label}
               </option>
             ))}
           </select>
 
-          <input type="number" value={form.feeAmount} readOnly />
+          <input
+            type="text"
+            value={form.feeAmount ? `${form.feeAmount} ETB` : ""}
+            placeholder="Course Fee"
+            readOnly
+          />
 
           <select
             value={form.paymentStatus}
