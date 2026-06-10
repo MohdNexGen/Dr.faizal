@@ -1,36 +1,5 @@
 import { useState } from "react";
 
-const testStudents = [
-  {
-    id: "DFS-2026-0001",
-    name: "mohd3:45",
-    phone: "6138845109",
-    language: "English",
-    course: "Full Web Development",
-    fee: "3000",
-    status: "Pending",
-    lessonsCompleted: 8,
-    totalLessons: 40,
-    currentModule: "HTML Fundamentals",
-    studyHours: 12,
-    quizScore: 60,
-  },
-  {
-    id: "DFS-2026-0004",
-    name: "Abrar6:22",
-    phone: "613123456",
-    language: "Somali",
-    course: "Somali Web Development",
-    fee: "3000",
-    status: "Paid",
-    lessonsCompleted: 32,
-    totalLessons: 40,
-    currentModule: "React Components",
-    studyHours: 48,
-    quizScore: 90,
-  },
-];
-
 const quizQuestions = [
   {
     question: "What does HTML stand for?",
@@ -65,13 +34,23 @@ function StudentDashboard({ setPage }) {
   const normalize = (value) => String(value || "").trim().toLowerCase();
   const onlyNumbers = (value) => String(value || "").replace(/\D/g, "");
 
-  const getProgress = (s) =>
-    Math.round((s.lessonsCompleted / s.totalLessons) * 100);
+  function getStudents() {
+    return JSON.parse(localStorage.getItem("students")) || [];
+  }
+
+  const students = getStudents();
+
+  const getName = (s) => s.fullName || s.name || "Unknown Student";
+  const getId = (s) => s.studentId || s.id || "";
+  const getPhone = (s) => s.phone || "";
+  const getFee = (s) => s.feeAmount || s.fee || "3000";
+  const getPaymentStatus = (s) => s.paymentStatus || s.status || "Pending";
+
+  const getProgress = () => 0;
 
   const getBestScore = () => {
-    if (!student) return 0;
-    if (latestScore !== null) return Math.max(student.quizScore, latestScore);
-    return student.quizScore;
+    if (latestScore !== null) return latestScore;
+    return 0;
   };
 
   const isPassed = () => latestScore !== null && latestScore >= 70;
@@ -82,18 +61,18 @@ function StudentDashboard({ setPage }) {
   };
 
   const fillStudent = (s) => {
-    setStudentId(s.id);
-    setStudentPhone(s.phone);
+    setStudentId(getId(s));
+    setStudentPhone(getPhone(s));
     setError("");
   };
 
   const handleLogin = (e) => {
     e.preventDefault();
 
-    const foundStudent = testStudents.find(
+    const foundStudent = students.find(
       (s) =>
-        normalize(s.id) === normalize(studentId) &&
-        onlyNumbers(s.phone) === onlyNumbers(studentPhone)
+        normalize(getId(s)) === normalize(studentId) &&
+        onlyNumbers(getPhone(s)) === onlyNumbers(studentPhone)
     );
 
     if (!foundStudent) {
@@ -122,10 +101,7 @@ function StudentDashboard({ setPage }) {
 
     const score = Math.round((correct / quizQuestions.length) * 100);
     setLatestScore(score);
-
-    if (score >= 70) {
-      setShowCertificate(false);
-    }
+    setShowCertificate(false);
   };
 
   const handleLogout = () => {
@@ -150,16 +126,31 @@ function StudentDashboard({ setPage }) {
       {!student ? (
         <div className="page-card">
           <h1>Student Portal</h1>
-          <p>Login to view progress, quiz score, and certificate status.</p>
+          <p>Login using the Student ID and phone number used during registration.</p>
 
           <div style={testBox}>
-            <h3 style={{ textAlign: "center" }}>Test Student List</h3>
+            <h3 style={{ textAlign: "center" }}>Registered Student List</h3>
 
-            {testStudents.map((s) => (
-              <button key={s.id} onClick={() => fillStudent(s)} style={testBtn}>
-                {s.id} — {s.name} — {s.phone}
-              </button>
-            ))}
+            {students.length === 0 ? (
+              <p style={{ textAlign: "center", color: "#cbd5e1" }}>
+                No students found yet. Register a student first.
+              </p>
+            ) : (
+              students.map((s, index) => (
+                <button
+                  key={`${getId(s)}-${index}`}
+                  onClick={() => fillStudent(s)}
+                  style={testBtn}
+                >
+                  <strong>{getId(s)}</strong> — {getName(s)} — {getPhone(s)}
+                  <br />
+                  <small>
+                    {s.language || "English"} | {s.course || "No course"} |{" "}
+                    {getFee(s)} ETB | {getPaymentStatus(s)}
+                  </small>
+                </button>
+              ))
+            )}
           </div>
 
           <form onSubmit={handleLogin} style={formStyle}>
@@ -189,32 +180,38 @@ function StudentDashboard({ setPage }) {
       ) : (
         <div className="page-card">
           <div className="no-print">
-            <h1>Welcome, {student.name}</h1>
-            <p>Student dashboard with certificate system.</p>
+            <h1>Welcome, {getName(student)}</h1>
+            <p>Student dashboard with quiz and certificate system.</p>
 
             <div style={gridStyle}>
               <div className="stat-card">
                 <h2>🆔</h2>
                 <h3>Student ID</h3>
-                <p style={blueText}>{student.id}</p>
+                <p style={blueText}>{getId(student)}</p>
               </div>
 
               <div className="stat-card">
-                <h2>📊</h2>
-                <h3>Progress</h3>
-                <p style={blueText}>{getProgress(student)}%</p>
+                <h2>📚</h2>
+                <h3>Course</h3>
+                <p>{student.course}</p>
+              </div>
+
+              <div className="stat-card">
+                <h2>💰</h2>
+                <h3>Course Fee</h3>
+                <p>{getFee(student)} ETB</p>
+              </div>
+
+              <div className="stat-card">
+                <h2>💳</h2>
+                <h3>Payment</h3>
+                <p>{getPaymentStatus(student)}</p>
               </div>
 
               <div className="stat-card">
                 <h2>📝</h2>
                 <h3>Quiz Score</h3>
                 <p style={blueText}>{getBestScore()}%</p>
-              </div>
-
-              <div className="stat-card">
-                <h2>💰</h2>
-                <h3>Payment</h3>
-                <p>{student.status}</p>
               </div>
 
               <div className="stat-card">
@@ -272,7 +269,7 @@ function StudentDashboard({ setPage }) {
               <div style={certificateBox}>
                 <h2>🎓 Certificate Ready</h2>
                 <p>
-                  Congratulations <strong>{student.name}</strong>. You are
+                  Congratulations <strong>{getName(student)}</strong>. You are
                   eligible for your Dr. Faizal School certificate.
                 </p>
 
@@ -290,11 +287,10 @@ function StudentDashboard({ setPage }) {
             <div style={certificatePreview} className="certificate-print">
               <h1>Certificate of Completion</h1>
               <p>This certificate is proudly presented to</p>
-              <h2>{student.name}</h2>
+              <h2>{getName(student)}</h2>
               <p>For successfully completing</p>
               <h3>{student.course}</h3>
-              <p>Student ID: {student.id}</p>
-              <p>Progress: {getProgress(student)}%</p>
+              <p>Student ID: {getId(student)}</p>
               <p>Quiz Score: {getBestScore()}%</p>
               <p>Dr. Faizal School</p>
               <small>English | العربية | Soomaali</small>
@@ -322,7 +318,7 @@ function StudentDashboard({ setPage }) {
 }
 
 const testBox = {
-  maxWidth: "700px",
+  maxWidth: "900px",
   margin: "30px auto",
   padding: "22px",
   borderRadius: "20px",
@@ -332,14 +328,15 @@ const testBox = {
 
 const testBtn = {
   width: "100%",
-  marginBottom: "10px",
-  padding: "13px",
+  marginBottom: "12px",
+  padding: "16px",
   borderRadius: "14px",
   border: "1px solid #334155",
   background: "#0f172a",
   color: "#fff",
   cursor: "pointer",
   textAlign: "left",
+  fontSize: "16px",
 };
 
 const formStyle = {
