@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
 
+const courseFees = {
+  "Full Web Development": 3000,
+  "Arabic Web Development": 3000,
+  "Somali Web Development": 3000,
+};
+
 function AdminDashboard({ setPage }) {
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
+  const [editingStudent, setEditingStudent] = useState(null);
 
   useEffect(() => {
     const savedStudents = JSON.parse(localStorage.getItem("students")) || [];
@@ -12,6 +19,43 @@ function AdminDashboard({ setPage }) {
   function saveStudents(updatedStudents) {
     localStorage.setItem("students", JSON.stringify(updatedStudents));
     setStudents(updatedStudents);
+  }
+
+  function openEdit(student) {
+    setEditingStudent({ ...student });
+  }
+
+  function closeEdit() {
+    setEditingStudent(null);
+  }
+
+  function updateEditField(field, value) {
+    if (field === "course") {
+      setEditingStudent({
+        ...editingStudent,
+        course: value,
+        feeAmount: courseFees[value] || 0,
+      });
+      return;
+    }
+
+    setEditingStudent({
+      ...editingStudent,
+      [field]: value,
+    });
+  }
+
+  function saveEdit() {
+    const updatedStudents = students.map((student) => {
+      if (student.studentId === editingStudent.studentId) {
+        return editingStudent;
+      }
+
+      return student;
+    });
+
+    saveStudents(updatedStudents);
+    closeEdit();
   }
 
   function deleteStudent(studentId) {
@@ -88,7 +132,7 @@ function AdminDashboard({ setPage }) {
       <div className="admin-header">
         <div>
           <h1>Admin Dashboard</h1>
-          <p>Search, manage, and review student records.</p>
+          <p>Search, edit, delete, and review student records.</p>
         </div>
 
         <button className="danger-btn" onClick={clearStudents}>
@@ -150,14 +194,12 @@ function AdminDashboard({ setPage }) {
               <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Email</th>
                 <th>Phone</th>
                 <th>Language</th>
                 <th>Course</th>
                 <th>Fee</th>
                 <th>Status</th>
-                <th>Date</th>
-                <th>Action</th>
+                <th>Actions</th>
               </tr>
             </thead>
 
@@ -166,7 +208,6 @@ function AdminDashboard({ setPage }) {
                 <tr key={student.studentId}>
                   <td>{student.studentId}</td>
                   <td>{student.fullName}</td>
-                  <td>{student.email}</td>
                   <td>{student.phone}</td>
                   <td>{student.language}</td>
                   <td>{student.course}</td>
@@ -182,8 +223,14 @@ function AdminDashboard({ setPage }) {
                       {student.paymentStatus}
                     </span>
                   </td>
-                  <td>{student.registeredAt}</td>
                   <td>
+                    <button
+                      className="edit-btn"
+                      onClick={() => openEdit(student)}
+                    >
+                      Edit
+                    </button>
+
                     <button
                       className="delete-btn"
                       onClick={() => deleteStudent(student.studentId)}
@@ -197,6 +244,83 @@ function AdminDashboard({ setPage }) {
           </table>
         )}
       </div>
+
+      {editingStudent && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <h2>Edit Student</h2>
+
+            <label>Student ID</label>
+            <input value={editingStudent.studentId} readOnly />
+
+            <label>Full Name</label>
+            <input
+              value={editingStudent.fullName}
+              onChange={(e) => updateEditField("fullName", e.target.value)}
+            />
+
+            <label>Email</label>
+            <input
+              value={editingStudent.email}
+              onChange={(e) => updateEditField("email", e.target.value)}
+            />
+
+            <label>Phone</label>
+            <input
+              value={editingStudent.phone}
+              onChange={(e) => updateEditField("phone", e.target.value)}
+            />
+
+            <label>Language</label>
+            <select
+              value={editingStudent.language}
+              onChange={(e) => updateEditField("language", e.target.value)}
+            >
+              <option value="English">English</option>
+              <option value="Arabic">Arabic</option>
+              <option value="Somali">Somali</option>
+            </select>
+
+            <label>Course</label>
+            <select
+              value={editingStudent.course}
+              onChange={(e) => updateEditField("course", e.target.value)}
+            >
+              <option value="Full Web Development">Full Web Development</option>
+              <option value="Arabic Web Development">
+                Arabic Web Development
+              </option>
+              <option value="Somali Web Development">
+                Somali Web Development
+              </option>
+            </select>
+
+            <label>Fee Amount</label>
+            <input value={`${editingStudent.feeAmount} ETB`} readOnly />
+
+            <label>Payment Status</label>
+            <select
+              value={editingStudent.paymentStatus}
+              onChange={(e) =>
+                updateEditField("paymentStatus", e.target.value)
+              }
+            >
+              <option value="Pending">Pending</option>
+              <option value="Paid">Paid</option>
+            </select>
+
+            <div className="modal-actions">
+              <button className="save-btn" onClick={saveEdit}>
+                Save Changes
+              </button>
+
+              <button className="cancel-btn" onClick={closeEdit}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
