@@ -9,6 +9,10 @@ const testStudents = [
     course: "Full Web Development",
     fee: "3000",
     status: "Pending",
+    lessonsCompleted: 8,
+    totalLessons: 40,
+    currentModule: "HTML Fundamentals",
+    studyHours: 12,
   },
   {
     id: "DFS-2026-0002",
@@ -18,6 +22,10 @@ const testStudents = [
     course: "Arabic Web Development",
     fee: "3000",
     status: "Pending",
+    lessonsCompleted: 14,
+    totalLessons: 40,
+    currentModule: "CSS Styling",
+    studyHours: 20,
   },
   {
     id: "DFS-2026-0003",
@@ -27,6 +35,10 @@ const testStudents = [
     course: "Arabic Web Development",
     fee: "3000",
     status: "Paid",
+    lessonsCompleted: 24,
+    totalLessons: 40,
+    currentModule: "JavaScript Basics",
+    studyHours: 34,
   },
   {
     id: "DFS-2026-0004",
@@ -36,6 +48,10 @@ const testStudents = [
     course: "Somali Web Development",
     fee: "3000",
     status: "Paid",
+    lessonsCompleted: 32,
+    totalLessons: 40,
+    currentModule: "React Components",
+    studyHours: 48,
   },
   {
     id: "DFS-2026-0005",
@@ -45,6 +61,10 @@ const testStudents = [
     course: "Somali Web Development",
     fee: "3000",
     status: "Pending",
+    lessonsCompleted: 4,
+    totalLessons: 40,
+    currentModule: "Course Introduction",
+    studyHours: 6,
   },
 ];
 
@@ -56,6 +76,15 @@ function StudentDashboard({ setPage }) {
 
   const normalize = (value) => String(value || "").trim().toLowerCase();
   const onlyNumbers = (value) => String(value || "").replace(/\D/g, "");
+
+  const getProgress = (s) =>
+    Math.round((s.lessonsCompleted / s.totalLessons) * 100);
+
+  const certificateStatus = (s) => {
+    if (s.status !== "Paid") return "Payment Required";
+    if (getProgress(s) < 80) return "Not Eligible";
+    return "Eligible Soon";
+  };
 
   const showError = (message) => {
     setError(message);
@@ -105,7 +134,7 @@ function StudentDashboard({ setPage }) {
           <h1>Student Portal</h1>
           <p>
             Login with your Student ID and phone number to view your profile,
-            course, and payment information.
+            course, payment, and learning progress.
           </p>
 
           <div
@@ -202,13 +231,7 @@ function StudentDashboard({ setPage }) {
             />
 
             {error && (
-              <p
-                style={{
-                  color: "#ff6b6b",
-                  textAlign: "center",
-                  fontWeight: "700",
-                }}
-              >
+              <p style={{ color: "#ff6b6b", textAlign: "center", fontWeight: "700" }}>
                 {error}
               </p>
             )}
@@ -234,7 +257,7 @@ function StudentDashboard({ setPage }) {
       ) : (
         <div className="page-card">
           <h1>Welcome, {student.name}</h1>
-          <p>Your student profile dashboard is shown below.</p>
+          <p>Your student profile and learning progress are shown below.</p>
 
           <div
             style={{
@@ -260,52 +283,89 @@ function StudentDashboard({ setPage }) {
             </div>
 
             <div className="stat-card">
-              <h2>🌐</h2>
-              <h3>Language</h3>
-              <p>{student.language}</p>
-            </div>
-
-            <div className="stat-card">
               <h2>📚</h2>
               <h3>Course</h3>
               <p>{student.course}</p>
+              <small>{student.language}</small>
             </div>
 
             <div className="stat-card">
               <h2>💰</h2>
-              <h3>Course Fee</h3>
+              <h3>Payment</h3>
               <p style={{ color: "#60a5fa", fontWeight: "800" }}>
                 {student.fee} ETB
+              </p>
+              <small>{student.status}</small>
+            </div>
+
+            <div className="stat-card">
+              <h2>📖</h2>
+              <h3>Lessons Completed</h3>
+              <p style={{ color: "#22c55e", fontWeight: "800" }}>
+                {student.lessonsCompleted} / {student.totalLessons}
               </p>
             </div>
 
             <div className="stat-card">
-              <h2>📌</h2>
-              <h3>Payment Status</h3>
-              <p
+              <h2>📊</h2>
+              <h3>Course Progress</h3>
+              <p style={{ color: "#60a5fa", fontWeight: "800" }}>
+                {getProgress(student)}%
+              </p>
+
+              <div
                 style={{
-                  display: "inline-block",
-                  padding: "8px 20px",
+                  width: "100%",
+                  height: "12px",
+                  background: "#0f172a",
                   borderRadius: "20px",
-                  background: student.status === "Paid" ? "#16a34a" : "#f97316",
-                  color: "#ffffff",
-                  fontWeight: "800",
+                  overflow: "hidden",
+                  marginTop: "12px",
                 }}
               >
-                {student.status}
+                <div
+                  style={{
+                    width: `${getProgress(student)}%`,
+                    height: "100%",
+                    background: "#22c55e",
+                    borderRadius: "20px",
+                  }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <h2>🎯</h2>
+              <h3>Current Module</h3>
+              <p>{student.currentModule}</p>
+            </div>
+
+            <div className="stat-card">
+              <h2>⏱</h2>
+              <h3>Study Hours</h3>
+              <p style={{ color: "#60a5fa", fontWeight: "800" }}>
+                {student.studyHours} Hours
               </p>
             </div>
 
             <div className="stat-card">
               <h2>🎓</h2>
-              <h3>Certificate Status</h3>
-              <p>Not Issued</p>
-            </div>
-
-            <div className="stat-card">
-              <h2>✅</h2>
-              <h3>Account Status</h3>
-              <p style={{ color: "#22c55e", fontWeight: "800" }}>Active</p>
+              <h3>Certificate Eligibility</h3>
+              <p
+                style={{
+                  display: "inline-block",
+                  padding: "8px 18px",
+                  borderRadius: "20px",
+                  background:
+                    certificateStatus(student) === "Eligible Soon"
+                      ? "#16a34a"
+                      : "#f97316",
+                  color: "#ffffff",
+                  fontWeight: "800",
+                }}
+              >
+                {certificateStatus(student)}
+              </p>
             </div>
           </div>
 
