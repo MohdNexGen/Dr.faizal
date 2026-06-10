@@ -47,10 +47,10 @@ function App() {
 
       {page === "home" && <Home setPage={setPage} language={language} />}
       {page === "courses" && <Courses setPage={setPage} language={language} />}
-      {page === "register" && <Register language={language} />}
-      {page === "student" && <StudentDashboard />}
-      {page === "admin" && <AdminDashboard />}
-      {page === "payments" && <Payments />}
+      {page === "register" && <Register setPage={setPage} language={language} />}
+      {page === "student" && <StudentDashboard setPage={setPage} />}
+      {page === "admin" && <AdminDashboard setPage={setPage} />}
+      {page === "payments" && <Payments setPage={setPage} />}
 
       <footer className="footer">
         <p>Dr. Faizal School</p>

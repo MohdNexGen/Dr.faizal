@@ -1,12 +1,18 @@
-function StudentDatshboard() {
+function StudentDatshboard({ setPage }) {
   return (
-    <section>
-      <h2>Student Dashboard</h2>
+    <main className="page-container">
+      <button className="back-btn" onClick={() => setPage("home")}>
+        ← Back to Home
+      </button>
 
-      <p>Name: Student Name</p>
-      <p>Course: Full Web Development</p>
-      <p>Payment Status: Pending</p>
-    </section>
+      <section className="card">
+        <h1>Student Dashboard</h1>
+        <p>
+          Students will later use this page to view registration, course, and
+          payment status.
+        </p>
+      </section>
+    </main>
   );
 }
 

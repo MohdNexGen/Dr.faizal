@@ -1,10 +1,17 @@
-function Payments() {
+function Payments({ setPage }) {
   return (
-    <section>
-      <h2>Payments</h2>
+    <main className="page-container">
+      <button className="back-btn" onClick={() => setPage("home")}>
+        ← Back to Home
+      </button>
 
-      <p>Payment integration will be added here.</p>
-    </section>
+      <section className="card">
+        <h1>Payments & Fees</h1>
+        <p>Course Fee: 3000 ETB</p>
+        <p>Payment Status: Pending or Paid</p>
+        <p>Payment integration will be added later.</p>
+      </section>
+    </main>
   );
 }
 

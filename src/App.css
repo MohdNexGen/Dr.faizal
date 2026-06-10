@@ -302,3 +302,122 @@ body {
   border-top: 1px solid #1e293b;
   margin-top: 50px;
 }
+
+.success-message {
+  background: #16a34a;
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-header p {
+  color: #cbd5e1;
+  margin-top: 8px;
+}
+
+.danger-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.danger-btn:hover {
+  background: #b91c1c;
+}
+
+.table-box {
+  background: #1e293b;
+  margin-top: 40px;
+  padding: 25px;
+  border-radius: 15px;
+  overflow-x: auto;
+}
+
+.table-box h2 {
+  margin-bottom: 20px;
+}
+
+.empty-text {
+  color: #cbd5e1;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+
+th,
+td {
+  padding: 14px;
+  border-bottom: 1px solid #334155;
+  text-align: left;
+}
+
+th {
+  color: #60a5fa;
+}
+
+td {
+  color: #e2e8f0;
+}
+
+.status-paid {
+  background: #16a34a;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.status-pending {
+  background: #f97316;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .admin-header {
+    align-items: flex-start;
+  }
+
+  .danger-btn {
+    width: 100%;
+  }
+}
+.back-btn {
+  background: transparent;
+  color: #60a5fa;
+  border: 1px solid #334155;
+  padding: 11px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  margin-bottom: 25px;
+}
+
+.back-btn:hover {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+src/App.css
