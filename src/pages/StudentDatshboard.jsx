@@ -13,32 +13,7 @@ const testStudents = [
     totalLessons: 40,
     currentModule: "HTML Fundamentals",
     studyHours: 12,
-  },
-  {
-    id: "DFS-2026-0002",
-    name: "Ahmed Ali",
-    phone: "6135135109",
-    language: "Arabic",
-    course: "Arabic Web Development",
-    fee: "3000",
-    status: "Pending",
-    lessonsCompleted: 14,
-    totalLessons: 40,
-    currentModule: "CSS Styling",
-    studyHours: 20,
-  },
-  {
-    id: "DFS-2026-0003",
-    name: "mohd4:07",
-    phone: "908659988",
-    language: "Arabic",
-    course: "Arabic Web Development",
-    fee: "3000",
-    status: "Paid",
-    lessonsCompleted: 24,
-    totalLessons: 40,
-    currentModule: "JavaScript Basics",
-    studyHours: 34,
+    quizScore: 60,
   },
   {
     id: "DFS-2026-0004",
@@ -52,19 +27,25 @@ const testStudents = [
     totalLessons: 40,
     currentModule: "React Components",
     studyHours: 48,
+    quizScore: 90,
+  },
+];
+
+const quizQuestions = [
+  {
+    question: "What does HTML stand for?",
+    correct: "HyperText Markup Language",
+    options: ["HyperText Markup Language", "Home Tool Markup Language", "Hyper Transfer Main Language"],
   },
   {
-    id: "DFS-2026-0005",
-    name: "muti6:33",
-    phone: "09123456",
-    language: "Somali",
-    course: "Somali Web Development",
-    fee: "3000",
-    status: "Pending",
-    lessonsCompleted: 4,
-    totalLessons: 40,
-    currentModule: "Course Introduction",
-    studyHours: 6,
+    question: "Which language is used for styling web pages?",
+    correct: "CSS",
+    options: ["HTML", "CSS", "JavaScript"],
+  },
+  {
+    question: "Which language adds interactivity to websites?",
+    correct: "JavaScript",
+    options: ["CSS", "HTML", "JavaScript"],
   },
 ];
 
@@ -73,6 +54,9 @@ function StudentDashboard({ setPage }) {
   const [studentPhone, setStudentPhone] = useState("");
   const [student, setStudent] = useState(null);
   const [error, setError] = useState("");
+  const [answers, setAnswers] = useState({});
+  const [latestScore, setLatestScore] = useState(null);
+  const [showCertificate, setShowCertificate] = useState(false);
 
   const normalize = (value) => String(value || "").trim().toLowerCase();
   const onlyNumbers = (value) => String(value || "").replace(/\D/g, "");
@@ -80,10 +64,21 @@ function StudentDashboard({ setPage }) {
   const getProgress = (s) =>
     Math.round((s.lessonsCompleted / s.totalLessons) * 100);
 
-  const certificateStatus = (s) => {
+  const getBestScore = () => {
+    if (!student) return 0;
+    return latestScore === null
+      ? student.quizScore
+      : Math.max(student.quizScore, latestScore);
+  };
+
+  const isCertificateReady = (s) =>
+    s.status === "Paid" && getProgress(s) >= 80 && getBestScore() >= 70;
+
+  const getCertificateStatus = (s) => {
     if (s.status !== "Paid") return "Payment Required";
-    if (getProgress(s) < 80) return "Not Eligible";
-    return "Eligible Soon";
+    if (getProgress(s) < 80) return "Progress Required";
+    if (getBestScore() < 70) return "Quiz Required";
+    return "Certificate Ready";
   };
 
   const showError = (message) => {
@@ -112,15 +107,34 @@ function StudentDashboard({ setPage }) {
       return;
     }
 
-    setError("");
     setStudent(foundStudent);
+    setAnswers({});
+    setLatestScore(null);
+    setShowCertificate(false);
+    setError("");
+  };
+
+  const handleAnswer = (index, option) => {
+    setAnswers({ ...answers, [index]: option });
+  };
+
+  const submitQuiz = () => {
+    let correct = 0;
+
+    quizQuestions.forEach((q, index) => {
+      if (answers[index] === q.correct) correct++;
+    });
+
+    setLatestScore(Math.round((correct / quizQuestions.length) * 100));
   };
 
   const handleLogout = () => {
     setStudent(null);
     setStudentId("");
     setStudentPhone("");
-    setError("");
+    setAnswers({});
+    setLatestScore(null);
+    setShowCertificate(false);
   };
 
   return (
@@ -132,257 +146,150 @@ function StudentDashboard({ setPage }) {
       {!student ? (
         <div className="page-card">
           <h1>Student Portal</h1>
-          <p>
-            Login with your Student ID and phone number to view your profile,
-            course, payment, and learning progress.
-          </p>
+          <p>Login to view progress, quiz score, and certificate status.</p>
 
-          <div
-            style={{
-              maxWidth: "700px",
-              margin: "30px auto",
-              padding: "22px",
-              borderRadius: "20px",
-              background: "#1e293b",
-              border: "1px solid #334155",
-            }}
-          >
-            <h3 style={{ textAlign: "center", marginBottom: "18px" }}>
-              Test Student List
-            </h3>
+          <div style={testBox}>
+            <h3 style={{ textAlign: "center" }}>Test Student List</h3>
 
             {testStudents.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => fillStudent(s)}
-                style={{
-                  width: "100%",
-                  marginBottom: "10px",
-                  padding: "13px",
-                  borderRadius: "14px",
-                  border: "1px solid #334155",
-                  background: "#0f172a",
-                  color: "#ffffff",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  fontSize: "15px",
-                  fontWeight: "600",
-                }}
-              >
+              <button key={s.id} onClick={() => fillStudent(s)} style={testBtn}>
                 {s.id} — {s.name} — {s.phone}
               </button>
             ))}
           </div>
 
-          <form
-            onSubmit={handleLogin}
-            style={{
-              maxWidth: "520px",
-              margin: "35px auto 0",
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-              textAlign: "left",
-            }}
-          >
-            <label style={{ fontSize: "18px", fontWeight: "700" }}>
-              Student ID
-            </label>
-
+          <form onSubmit={handleLogin} style={formStyle}>
+            <label>Student ID</label>
             <input
-              type="text"
-              placeholder="Example: DFS-2026-0001"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
+              placeholder="Example: DFS-2026-0001"
+              style={inputStyle}
               required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "12px",
-                border: "1px solid #334155",
-                background: "#0f172a",
-                color: "#ffffff",
-                fontSize: "17px",
-                outline: "none",
-              }}
             />
 
-            <label style={{ fontSize: "18px", fontWeight: "700" }}>
-              Phone Number
-            </label>
-
+            <label>Phone Number</label>
             <input
-              type="tel"
-              placeholder="Enter registered phone number"
               value={studentPhone}
               onChange={(e) => setStudentPhone(e.target.value)}
+              placeholder="Enter phone number"
+              style={inputStyle}
               required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "12px",
-                border: "1px solid #334155",
-                background: "#0f172a",
-                color: "#ffffff",
-                fontSize: "17px",
-                outline: "none",
-              }}
             />
 
-            {error && (
-              <p style={{ color: "#ff6b6b", textAlign: "center", fontWeight: "700" }}>
-                {error}
-              </p>
-            )}
+            {error && <p style={errorStyle}>{error}</p>}
 
-            <button
-              type="submit"
-              style={{
-                marginTop: "10px",
-                padding: "14px",
-                borderRadius: "12px",
-                border: "none",
-                background: "#2563eb",
-                color: "#ffffff",
-                fontSize: "18px",
-                fontWeight: "700",
-                cursor: "pointer",
-              }}
-            >
-              Login
-            </button>
+            <button style={blueButton}>Login</button>
           </form>
         </div>
       ) : (
         <div className="page-card">
           <h1>Welcome, {student.name}</h1>
-          <p>Your student profile and learning progress are shown below.</p>
+          <p>Student dashboard with certificate system.</p>
 
-          <div
-            style={{
-              marginTop: "35px",
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-              gap: "22px",
-            }}
-          >
+          <div style={gridStyle}>
             <div className="stat-card">
               <h2>🆔</h2>
               <h3>Student ID</h3>
-              <p style={{ color: "#60a5fa", fontWeight: "800" }}>
-                {student.id}
-              </p>
+              <p style={blueText}>{student.id}</p>
             </div>
 
             <div className="stat-card">
-              <h2>👤</h2>
-              <h3>Student Profile</h3>
-              <p>{student.name}</p>
-              <small>{student.phone}</small>
+              <h2>📊</h2>
+              <h3>Progress</h3>
+              <p style={blueText}>{getProgress(student)}%</p>
             </div>
 
             <div className="stat-card">
-              <h2>📚</h2>
-              <h3>Course</h3>
-              <p>{student.course}</p>
-              <small>{student.language}</small>
+              <h2>📝</h2>
+              <h3>Quiz Score</h3>
+              <p style={blueText}>{getBestScore()}%</p>
             </div>
 
             <div className="stat-card">
               <h2>💰</h2>
               <h3>Payment</h3>
-              <p style={{ color: "#60a5fa", fontWeight: "800" }}>
-                {student.fee} ETB
-              </p>
-              <small>{student.status}</small>
-            </div>
-
-            <div className="stat-card">
-              <h2>📖</h2>
-              <h3>Lessons Completed</h3>
-              <p style={{ color: "#22c55e", fontWeight: "800" }}>
-                {student.lessonsCompleted} / {student.totalLessons}
-              </p>
-            </div>
-
-            <div className="stat-card">
-              <h2>📊</h2>
-              <h3>Course Progress</h3>
-              <p style={{ color: "#60a5fa", fontWeight: "800" }}>
-                {getProgress(student)}%
-              </p>
-
-              <div
-                style={{
-                  width: "100%",
-                  height: "12px",
-                  background: "#0f172a",
-                  borderRadius: "20px",
-                  overflow: "hidden",
-                  marginTop: "12px",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${getProgress(student)}%`,
-                    height: "100%",
-                    background: "#22c55e",
-                    borderRadius: "20px",
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <h2>🎯</h2>
-              <h3>Current Module</h3>
-              <p>{student.currentModule}</p>
-            </div>
-
-            <div className="stat-card">
-              <h2>⏱</h2>
-              <h3>Study Hours</h3>
-              <p style={{ color: "#60a5fa", fontWeight: "800" }}>
-                {student.studyHours} Hours
-              </p>
+              <p>{student.status}</p>
             </div>
 
             <div className="stat-card">
               <h2>🎓</h2>
-              <h3>Certificate Eligibility</h3>
+              <h3>Certificate Status</h3>
               <p
                 style={{
-                  display: "inline-block",
-                  padding: "8px 18px",
-                  borderRadius: "20px",
-                  background:
-                    certificateStatus(student) === "Eligible Soon"
-                      ? "#16a34a"
-                      : "#f97316",
-                  color: "#ffffff",
-                  fontWeight: "800",
+                  ...badgeStyle,
+                  background: isCertificateReady(student) ? "#16a34a" : "#f97316",
                 }}
               >
-                {certificateStatus(student)}
+                {getCertificateStatus(student)}
               </p>
             </div>
           </div>
 
-          <button
-            onClick={handleLogout}
-            style={{
-              marginTop: "35px",
-              padding: "12px 30px",
-              borderRadius: "12px",
-              border: "none",
-              background: "#ef4444",
-              color: "#ffffff",
-              fontSize: "18px",
-              fontWeight: "700",
-              cursor: "pointer",
-            }}
-          >
+          <div style={quizBox}>
+            <h2 style={{ textAlign: "center" }}>Quick Quiz</h2>
+
+            {quizQuestions.map((q, index) => (
+              <div key={index} style={{ marginBottom: "22px" }}>
+                <h3>{index + 1}. {q.question}</h3>
+
+                {q.options.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => handleAnswer(index, option)}
+                    style={{
+                      ...answerBtn,
+                      background: answers[index] === option ? "#2563eb" : "#0f172a",
+                    }}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            ))}
+
+            <button onClick={submitQuiz} style={blueButton}>
+              Submit Quiz
+            </button>
+
+            {latestScore !== null && (
+              <h2 style={{ textAlign: "center" }}>
+                Latest Score: {latestScore}% — {latestScore >= 70 ? "Passed ✅" : "Failed ❌"}
+              </h2>
+            )}
+          </div>
+
+          {isCertificateReady(student) && (
+            <div style={certificateBox}>
+              <h2>🎓 Certificate Ready</h2>
+              <p>
+                Congratulations <strong>{student.name}</strong>. You are eligible
+                for your Dr. Faizal School certificate.
+              </p>
+
+              <button
+                onClick={() => setShowCertificate(!showCertificate)}
+                style={greenButton}
+              >
+                {showCertificate ? "Hide Certificate" : "View Certificate"}
+              </button>
+            </div>
+          )}
+
+          {showCertificate && (
+            <div style={certificatePreview}>
+              <h1>Certificate of Completion</h1>
+              <p>This certificate is proudly presented to</p>
+              <h2>{student.name}</h2>
+              <p>For completing</p>
+              <h3>{student.course}</h3>
+              <p>Student ID: {student.id}</p>
+              <p>Dr. Faizal School</p>
+              <small>English | العربية | Soomaali</small>
+            </div>
+          )}
+
+          <button onClick={handleLogout} style={redButton}>
             Logout
           </button>
         </div>
@@ -390,5 +297,138 @@ function StudentDashboard({ setPage }) {
     </section>
   );
 }
+
+const testBox = {
+  maxWidth: "700px",
+  margin: "30px auto",
+  padding: "22px",
+  borderRadius: "20px",
+  background: "#1e293b",
+  border: "1px solid #334155",
+};
+
+const testBtn = {
+  width: "100%",
+  marginBottom: "10px",
+  padding: "13px",
+  borderRadius: "14px",
+  border: "1px solid #334155",
+  background: "#0f172a",
+  color: "#fff",
+  cursor: "pointer",
+  textAlign: "left",
+};
+
+const formStyle = {
+  maxWidth: "520px",
+  margin: "35px auto 0",
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  textAlign: "left",
+};
+
+const inputStyle = {
+  padding: "14px",
+  borderRadius: "12px",
+  border: "1px solid #334155",
+  background: "#0f172a",
+  color: "#fff",
+  fontSize: "17px",
+};
+
+const gridStyle = {
+  marginTop: "35px",
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+  gap: "22px",
+};
+
+const quizBox = {
+  marginTop: "40px",
+  padding: "25px",
+  borderRadius: "20px",
+  background: "#1e293b",
+  border: "1px solid #334155",
+  textAlign: "left",
+};
+
+const answerBtn = {
+  display: "block",
+  width: "100%",
+  marginTop: "10px",
+  padding: "12px",
+  borderRadius: "12px",
+  border: "1px solid #334155",
+  color: "#fff",
+  cursor: "pointer",
+  textAlign: "left",
+};
+
+const certificateBox = {
+  marginTop: "35px",
+  padding: "25px",
+  borderRadius: "20px",
+  background: "#064e3b",
+  border: "1px solid #22c55e",
+};
+
+const certificatePreview = {
+  margin: "35px auto",
+  padding: "40px",
+  maxWidth: "750px",
+  borderRadius: "20px",
+  background: "#f8fafc",
+  color: "#0f172a",
+  border: "6px double #2563eb",
+  textAlign: "center",
+};
+
+const blueButton = {
+  padding: "14px",
+  borderRadius: "12px",
+  border: "none",
+  background: "#2563eb",
+  color: "#fff",
+  fontWeight: "700",
+  cursor: "pointer",
+};
+
+const greenButton = {
+  padding: "14px 28px",
+  borderRadius: "12px",
+  border: "none",
+  background: "#22c55e",
+  color: "#fff",
+  fontWeight: "700",
+  cursor: "pointer",
+};
+
+const redButton = {
+  marginTop: "35px",
+  padding: "12px 30px",
+  borderRadius: "12px",
+  border: "none",
+  background: "#ef4444",
+  color: "#fff",
+  fontWeight: "700",
+  cursor: "pointer",
+};
+
+const blueText = { color: "#60a5fa", fontWeight: "800" };
+
+const badgeStyle = {
+  display: "inline-block",
+  padding: "8px 18px",
+  borderRadius: "20px",
+  color: "#fff",
+  fontWeight: "800",
+};
+
+const errorStyle = {
+  color: "#ff6b6b",
+  textAlign: "center",
+  fontWeight: "700",
+};
 
 export default StudentDashboard;
