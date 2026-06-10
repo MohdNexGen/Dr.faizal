@@ -11,15 +11,23 @@ function App() {
   const [page, setPage] = useState("home");
   const [language, setLanguage] = useState("English");
 
+  const goHome = () => setPage("home");
+
   return (
-    <div>
+    <div className="app">
       <nav className="navbar">
-        <button onClick={() => setPage("home")}>Home</button>
-        <button onClick={() => setPage("courses")}>Courses</button>
-        <button onClick={() => setPage("register")}>Register</button>
-        <button onClick={() => setPage("student")}>Student</button>
-        <button onClick={() => setPage("admin")}>Admin</button>
-        <button onClick={() => setPage("payments")}>Payments</button>
+        <h2 className="logo" onClick={goHome}>
+          Dr. Faizal School
+        </h2>
+
+        <div className="nav-buttons">
+          <button onClick={() => setPage("home")}>Home</button>
+          <button onClick={() => setPage("courses")}>Courses</button>
+          <button onClick={() => setPage("register")}>Register</button>
+          <button onClick={() => setPage("student")}>Student Portal</button>
+          <button onClick={() => setPage("admin")}>Admin</button>
+          <button onClick={() => setPage("payments")}>Payments</button>
+        </div>
       </nav>
 
       <div className="language-switcher">
@@ -45,12 +53,18 @@ function App() {
         </button>
       </div>
 
-      {page === "home" && <Home setPage={setPage} language={language} />}
-      {page === "courses" && <Courses setPage={setPage} language={language} />}
-      {page === "register" && <Register setPage={setPage} language={language} />}
-      {page === "student" && <StudentDashboard setPage={setPage} />}
-      {page === "admin" && <AdminDashboard setPage={setPage} />}
-      {page === "payments" && <Payments setPage={setPage} />}
+      <main>
+        {page === "home" && <Home setPage={setPage} language={language} />}
+        {page === "courses" && (
+          <Courses setPage={setPage} language={language} />
+        )}
+        {page === "register" && (
+          <Register setPage={setPage} language={language} />
+        )}
+        {page === "student" && <StudentDashboard setPage={setPage} />}
+        {page === "admin" && <AdminDashboard setPage={setPage} />}
+        {page === "payments" && <Payments setPage={setPage} />}
+      </main>
 
       <footer className="footer">
         <p>Dr. Faizal School</p>
