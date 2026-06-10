@@ -35,7 +35,11 @@ const quizQuestions = [
   {
     question: "What does HTML stand for?",
     correct: "HyperText Markup Language",
-    options: ["HyperText Markup Language", "Home Tool Markup Language", "Hyper Transfer Main Language"],
+    options: [
+      "HyperText Markup Language",
+      "Home Tool Markup Language",
+      "Hyper Transfer Main Language",
+    ],
   },
   {
     question: "Which language is used for styling web pages?",
@@ -66,20 +70,11 @@ function StudentDashboard({ setPage }) {
 
   const getBestScore = () => {
     if (!student) return 0;
-    return latestScore === null
-      ? student.quizScore
-      : Math.max(student.quizScore, latestScore);
+    if (latestScore !== null) return Math.max(student.quizScore, latestScore);
+    return student.quizScore;
   };
 
-  const isCertificateReady = (s) =>
-    s.status === "Paid" && getProgress(s) >= 80 && getBestScore() >= 70;
-
-  const getCertificateStatus = (s) => {
-    if (s.status !== "Paid") return "Payment Required";
-    if (getProgress(s) < 80) return "Progress Required";
-    if (getBestScore() < 70) return "Quiz Required";
-    return "Certificate Ready";
-  };
+  const isPassed = () => latestScore !== null && latestScore >= 70;
 
   const showError = (message) => {
     setError(message);
@@ -125,7 +120,12 @@ function StudentDashboard({ setPage }) {
       if (answers[index] === q.correct) correct++;
     });
 
-    setLatestScore(Math.round((correct / quizQuestions.length) * 100));
+    const score = Math.round((correct / quizQuestions.length) * 100);
+    setLatestScore(score);
+
+    if (score >= 70) {
+      setShowCertificate(false);
+    }
   };
 
   const handleLogout = () => {
@@ -137,9 +137,13 @@ function StudentDashboard({ setPage }) {
     setShowCertificate(false);
   };
 
+  const printCertificate = () => {
+    window.print();
+  };
+
   return (
     <section className="page-section">
-      <button className="back-btn" onClick={() => setPage("home")}>
+      <button className="back-btn no-print" onClick={() => setPage("home")}>
         ← Back to Home
       </button>
 
@@ -184,112 +188,131 @@ function StudentDashboard({ setPage }) {
         </div>
       ) : (
         <div className="page-card">
-          <h1>Welcome, {student.name}</h1>
-          <p>Student dashboard with certificate system.</p>
+          <div className="no-print">
+            <h1>Welcome, {student.name}</h1>
+            <p>Student dashboard with certificate system.</p>
 
-          <div style={gridStyle}>
-            <div className="stat-card">
-              <h2>🆔</h2>
-              <h3>Student ID</h3>
-              <p style={blueText}>{student.id}</p>
-            </div>
-
-            <div className="stat-card">
-              <h2>📊</h2>
-              <h3>Progress</h3>
-              <p style={blueText}>{getProgress(student)}%</p>
-            </div>
-
-            <div className="stat-card">
-              <h2>📝</h2>
-              <h3>Quiz Score</h3>
-              <p style={blueText}>{getBestScore()}%</p>
-            </div>
-
-            <div className="stat-card">
-              <h2>💰</h2>
-              <h3>Payment</h3>
-              <p>{student.status}</p>
-            </div>
-
-            <div className="stat-card">
-              <h2>🎓</h2>
-              <h3>Certificate Status</h3>
-              <p
-                style={{
-                  ...badgeStyle,
-                  background: isCertificateReady(student) ? "#16a34a" : "#f97316",
-                }}
-              >
-                {getCertificateStatus(student)}
-              </p>
-            </div>
-          </div>
-
-          <div style={quizBox}>
-            <h2 style={{ textAlign: "center" }}>Quick Quiz</h2>
-
-            {quizQuestions.map((q, index) => (
-              <div key={index} style={{ marginBottom: "22px" }}>
-                <h3>{index + 1}. {q.question}</h3>
-
-                {q.options.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => handleAnswer(index, option)}
-                    style={{
-                      ...answerBtn,
-                      background: answers[index] === option ? "#2563eb" : "#0f172a",
-                    }}
-                  >
-                    {option}
-                  </button>
-                ))}
+            <div style={gridStyle}>
+              <div className="stat-card">
+                <h2>🆔</h2>
+                <h3>Student ID</h3>
+                <p style={blueText}>{student.id}</p>
               </div>
-            ))}
 
-            <button onClick={submitQuiz} style={blueButton}>
-              Submit Quiz
-            </button>
+              <div className="stat-card">
+                <h2>📊</h2>
+                <h3>Progress</h3>
+                <p style={blueText}>{getProgress(student)}%</p>
+              </div>
 
-            {latestScore !== null && (
-              <h2 style={{ textAlign: "center" }}>
-                Latest Score: {latestScore}% — {latestScore >= 70 ? "Passed ✅" : "Failed ❌"}
-              </h2>
+              <div className="stat-card">
+                <h2>📝</h2>
+                <h3>Quiz Score</h3>
+                <p style={blueText}>{getBestScore()}%</p>
+              </div>
+
+              <div className="stat-card">
+                <h2>💰</h2>
+                <h3>Payment</h3>
+                <p>{student.status}</p>
+              </div>
+
+              <div className="stat-card">
+                <h2>🎓</h2>
+                <h3>Certificate Status</h3>
+                <p
+                  style={{
+                    ...badgeStyle,
+                    background: isPassed() ? "#16a34a" : "#f97316",
+                  }}
+                >
+                  {isPassed() ? "Certificate Ready" : "Quiz Required"}
+                </p>
+              </div>
+            </div>
+
+            <div style={quizBox}>
+              <h2 style={{ textAlign: "center" }}>Quick Quiz</h2>
+
+              {quizQuestions.map((q, index) => (
+                <div key={index} style={{ marginBottom: "22px" }}>
+                  <h3>
+                    {index + 1}. {q.question}
+                  </h3>
+
+                  {q.options.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => handleAnswer(index, option)}
+                      style={{
+                        ...answerBtn,
+                        background:
+                          answers[index] === option ? "#2563eb" : "#0f172a",
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              ))}
+
+              <button onClick={submitQuiz} style={blueButton}>
+                Submit Quiz
+              </button>
+
+              {latestScore !== null && (
+                <h2 style={{ textAlign: "center" }}>
+                  Latest Score: {latestScore}% —{" "}
+                  {latestScore >= 70 ? "Passed ✅" : "Failed ❌"}
+                </h2>
+              )}
+            </div>
+
+            {isPassed() && (
+              <div style={certificateBox}>
+                <h2>🎓 Certificate Ready</h2>
+                <p>
+                  Congratulations <strong>{student.name}</strong>. You are
+                  eligible for your Dr. Faizal School certificate.
+                </p>
+
+                <button
+                  onClick={() => setShowCertificate(true)}
+                  style={greenButton}
+                >
+                  View Certificate
+                </button>
+              </div>
             )}
           </div>
 
-          {isCertificateReady(student) && (
-            <div style={certificateBox}>
-              <h2>🎓 Certificate Ready</h2>
-              <p>
-                Congratulations <strong>{student.name}</strong>. You are eligible
-                for your Dr. Faizal School certificate.
-              </p>
+          {showCertificate && (
+            <div style={certificatePreview} className="certificate-print">
+              <h1>Certificate of Completion</h1>
+              <p>This certificate is proudly presented to</p>
+              <h2>{student.name}</h2>
+              <p>For successfully completing</p>
+              <h3>{student.course}</h3>
+              <p>Student ID: {student.id}</p>
+              <p>Progress: {getProgress(student)}%</p>
+              <p>Quiz Score: {getBestScore()}%</p>
+              <p>Dr. Faizal School</p>
+              <small>English | العربية | Soomaali</small>
+
+              <br />
+              <br />
 
               <button
-                onClick={() => setShowCertificate(!showCertificate)}
-                style={greenButton}
+                onClick={printCertificate}
+                style={blueButton}
+                className="no-print"
               >
-                {showCertificate ? "Hide Certificate" : "View Certificate"}
+                Download / Print Certificate
               </button>
             </div>
           )}
 
-          {showCertificate && (
-            <div style={certificatePreview}>
-              <h1>Certificate of Completion</h1>
-              <p>This certificate is proudly presented to</p>
-              <h2>{student.name}</h2>
-              <p>For completing</p>
-              <h3>{student.course}</h3>
-              <p>Student ID: {student.id}</p>
-              <p>Dr. Faizal School</p>
-              <small>English | العربية | Soomaali</small>
-            </div>
-          )}
-
-          <button onClick={handleLogout} style={redButton}>
+          <button onClick={handleLogout} style={redButton} className="no-print">
             Logout
           </button>
         </div>
@@ -375,8 +398,8 @@ const certificateBox = {
 
 const certificatePreview = {
   margin: "35px auto",
-  padding: "40px",
-  maxWidth: "750px",
+  padding: "45px",
+  maxWidth: "780px",
   borderRadius: "20px",
   background: "#f8fafc",
   color: "#0f172a",
