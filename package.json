@@ -5,10 +5,10 @@
     "preview": "vite preview --open"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@vitejs/plugin-react": "latest",
-    "vite": "latest",
     "react": "latest",
-    "react-dom": "latest"
-  },
-  "devDependencies": {}
+    "react-dom": "latest",
+    "vite": "latest"
+  }
 }

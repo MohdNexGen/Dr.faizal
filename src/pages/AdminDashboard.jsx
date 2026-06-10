@@ -2,11 +2,51 @@ import { useEffect, useState } from "react";
 
 function AdminDashboard({ setPage }) {
   const [students, setStudents] = useState([]);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const savedStudents = JSON.parse(localStorage.getItem("students")) || [];
     setStudents(savedStudents);
   }, []);
+
+  function saveStudents(updatedStudents) {
+    localStorage.setItem("students", JSON.stringify(updatedStudents));
+    setStudents(updatedStudents);
+  }
+
+  function deleteStudent(studentId) {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this student?"
+    );
+
+    if (!confirmDelete) return;
+
+    const updatedStudents = students.filter(
+      (student) => student.studentId !== studentId
+    );
+
+    saveStudents(updatedStudents);
+  }
+
+  function clearStudents() {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete all registered students?"
+    );
+
+    if (!confirmDelete) return;
+
+    saveStudents([]);
+  }
+
+  const filteredStudents = students.filter((student) => {
+    const keyword = search.toLowerCase();
+
+    return (
+      student.studentId.toLowerCase().includes(keyword) ||
+      student.fullName.toLowerCase().includes(keyword) ||
+      student.phone.toLowerCase().includes(keyword)
+    );
+  });
 
   const totalStudents = students.length;
 
@@ -39,17 +79,6 @@ function AdminDashboard({ setPage }) {
     (student) => student.language === "Somali"
   ).length;
 
-  function clearStudents() {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete all registered students?"
-    );
-
-    if (!confirmDelete) return;
-
-    localStorage.removeItem("students");
-    setStudents([]);
-  }
-
   return (
     <main className="page-container">
       <button className="back-btn" onClick={() => setPage("home")}>
@@ -59,7 +88,7 @@ function AdminDashboard({ setPage }) {
       <div className="admin-header">
         <div>
           <h1>Admin Dashboard</h1>
-          <p>Student records, fees, payment status, and revenue summary.</p>
+          <p>Search, manage, and review student records.</p>
         </div>
 
         <button className="danger-btn" onClick={clearStudents}>
@@ -101,10 +130,20 @@ function AdminDashboard({ setPage }) {
       </div>
 
       <div className="table-box">
-        <h2>Registered Students</h2>
+        <div className="table-header">
+          <h2>Registered Students</h2>
 
-        {students.length === 0 ? (
-          <p className="empty-text">No students registered yet.</p>
+          <input
+            className="search-input"
+            type="text"
+            placeholder="Search by ID, name, or phone"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {filteredStudents.length === 0 ? (
+          <p className="empty-text">No students found.</p>
         ) : (
           <table>
             <thead>
@@ -118,11 +157,12 @@ function AdminDashboard({ setPage }) {
                 <th>Fee</th>
                 <th>Status</th>
                 <th>Date</th>
+                <th>Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {students.map((student) => (
+              {filteredStudents.map((student) => (
                 <tr key={student.studentId}>
                   <td>{student.studentId}</td>
                   <td>{student.fullName}</td>
@@ -143,6 +183,14 @@ function AdminDashboard({ setPage }) {
                     </span>
                   </td>
                   <td>{student.registeredAt}</td>
+                  <td>
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteStudent(student.studentId)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

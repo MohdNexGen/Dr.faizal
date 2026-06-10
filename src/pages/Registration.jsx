@@ -1,4 +1,10 @@
 import { useEffect, useState } from "react";
+import emailjs from "@emailjs/browser";
+
+const SERVICE_ID = "nexgen_gmail";
+const ADMIN_TEMPLATE_ID = "template_zvfw3qd";
+const STUDENT_TEMPLATE_ID = "template_rbz2rme";
+const PUBLIC_KEY = "H5xDt1e48EHqf_U4U";
 
 const courseOptions = {
   English: [
@@ -36,6 +42,7 @@ function Registration({ language, setPage }) {
   });
 
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     setForm((previous) => ({
@@ -69,32 +76,77 @@ function Registration({ language, setPage }) {
     });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setSending(true);
+    setMessage("");
 
     const newStudent = {
       studentId: generateStudentId(),
-      ...form,
+      fullName: form.fullName,
+      email: form.email,
+      phone: form.phone,
+      language: form.language,
+      course: form.course,
+      feeAmount: form.feeAmount,
+      paymentStatus: form.paymentStatus,
       registeredAt: new Date().toLocaleDateString(),
     };
 
-    const students = getStudents();
-    students.push(newStudent);
-    localStorage.setItem("students", JSON.stringify(students));
+    const templateParams = {
+      student_id: newStudent.studentId,
+      student_name: newStudent.fullName,
+      student_email: newStudent.email,
+      student_phone: newStudent.phone,
+      student_language: newStudent.language,
+      student_course: newStudent.course,
+      fee_amount: `${newStudent.feeAmount} ETB`,
+      payment_status: newStudent.paymentStatus,
+      registered_at: newStudent.registeredAt,
+    };
 
-    setMessage(`Registered successfully. Student ID: ${newStudent.studentId}`);
+    try {
+      const students = getStudents();
+      students.push(newStudent);
+      localStorage.setItem("students", JSON.stringify(students));
 
-    setForm({
-      fullName: "",
-      email: "",
-      phone: "",
-      language,
-      course: "",
-      feeAmount: 0,
-      paymentStatus: "Pending",
-    });
+      await emailjs.send(
+        SERVICE_ID,
+        ADMIN_TEMPLATE_ID,
+        templateParams,
+        PUBLIC_KEY
+      );
 
-    setTimeout(() => setMessage(""), 4000);
+      await emailjs.send(
+        SERVICE_ID,
+        STUDENT_TEMPLATE_ID,
+        templateParams,
+        PUBLIC_KEY
+      );
+
+      setMessage(
+        `Registered successfully. Student ID: ${newStudent.studentId}. Confirmation emails sent.`
+      );
+
+      setForm({
+        fullName: "",
+        email: "",
+        phone: "",
+        language,
+        course: "",
+        feeAmount: 0,
+        paymentStatus: "Pending",
+      });
+
+      setTimeout(() => setMessage(""), 5000);
+    } catch (error) {
+      console.error("EmailJS error:", error);
+      setMessage(
+        "Student saved, but email was not sent. Check EmailJS template fields."
+      );
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -106,7 +158,8 @@ function Registration({ language, setPage }) {
       <section className="form-box">
         <h2>Student Registration</h2>
         <p className="form-note">
-          Register students with unique ID, course fee, and payment status.
+          Register students with unique ID, course fee, payment status, and
+          email confirmation.
         </p>
 
         {message && <p className="success-message">{message}</p>}
@@ -175,7 +228,9 @@ function Registration({ language, setPage }) {
             <option value="Paid">Paid</option>
           </select>
 
-          <button type="submit">Register Student</button>
+          <button type="submit" disabled={sending}>
+            {sending ? "Sending..." : "Register Student"}
+          </button>
         </form>
       </section>
     </main>
