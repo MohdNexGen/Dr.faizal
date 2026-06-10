@@ -6,6 +6,9 @@ const ADMIN_TEMPLATE_ID = "template_zvfw3qd";
 const STUDENT_TEMPLATE_ID = "template_rbz2rme";
 const PUBLIC_KEY = "H5xDt1e48EHqf_U4U";
 
+const GOOGLE_SHEET_URL =
+  "https://script.google.com/macros/s/AKfycbyEy5PiQ_D4z_9JobE9DgzUQ2EBGK55-x_8KLA2upup0HW9jzGmFktY1tIiuYJuHZ552A/exec";
+
 const courseOptions = {
   English: [
     {
@@ -65,6 +68,7 @@ function Registration({ language, setPage }) {
 
   function handleCourseChange(e) {
     const selectedCourse = e.target.value;
+
     const selected = courseOptions[form.language].find(
       (course) => course.value === selectedCourse
     );
@@ -73,6 +77,17 @@ function Registration({ language, setPage }) {
       ...form,
       course: selectedCourse,
       feeAmount: selected ? selected.fee : 0,
+    });
+  }
+
+  async function sendToGoogleSheet(student) {
+    await fetch(GOOGLE_SHEET_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(student),
     });
   }
 
@@ -110,6 +125,8 @@ function Registration({ language, setPage }) {
       students.push(newStudent);
       localStorage.setItem("students", JSON.stringify(students));
 
+      await sendToGoogleSheet(newStudent);
+
       await emailjs.send(
         SERVICE_ID,
         ADMIN_TEMPLATE_ID,
@@ -125,7 +142,7 @@ function Registration({ language, setPage }) {
       );
 
       setMessage(
-        `Registered successfully. Student ID: ${newStudent.studentId}. Confirmation emails sent.`
+        `Registered successfully. Student ID: ${newStudent.studentId}. Saved to Google Sheet and emails sent.`
       );
 
       setForm({
@@ -138,11 +155,12 @@ function Registration({ language, setPage }) {
         paymentStatus: "Pending",
       });
 
-      setTimeout(() => setMessage(""), 5000);
+      setTimeout(() => setMessage(""), 6000);
     } catch (error) {
-      console.error("EmailJS error:", error);
+      console.error("Registration error:", error);
+
       setMessage(
-        "Student saved, but email was not sent. Check EmailJS template fields."
+        "Student saved locally, but Google Sheet or email failed. Check Apps Script and EmailJS."
       );
     } finally {
       setSending(false);
@@ -157,9 +175,10 @@ function Registration({ language, setPage }) {
 
       <section className="form-box">
         <h2>Student Registration</h2>
+
         <p className="form-note">
-          Register students with unique ID, course fee, payment status, and
-          email confirmation.
+          Register students with unique ID, course fee, payment status, Google
+          Sheet backup, and email confirmation.
         </p>
 
         {message && <p className="success-message">{message}</p>}
@@ -208,6 +227,7 @@ function Registration({ language, setPage }) {
 
           <select value={form.course} onChange={handleCourseChange} required>
             <option value="">Select Course</option>
+
             {courseOptions[form.language].map((course) => (
               <option key={course.value} value={course.value}>
                 {course.label}
@@ -229,7 +249,7 @@ function Registration({ language, setPage }) {
           </select>
 
           <button type="submit" disabled={sending}>
-            {sending ? "Sending..." : "Register Student"}
+            {sending ? "Saving..." : "Register Student"}
           </button>
         </form>
       </section>
