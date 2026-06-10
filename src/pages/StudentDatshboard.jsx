@@ -57,11 +57,15 @@ function StudentDashboard({ setPage }) {
   const normalize = (value) => String(value || "").trim().toLowerCase();
   const onlyNumbers = (value) => String(value || "").replace(/\D/g, "");
 
-  const showTemporaryError = (message) => {
+  const showError = (message) => {
     setError(message);
-    setTimeout(() => {
-      setError("");
-    }, 3000);
+    setTimeout(() => setError(""), 3000);
+  };
+
+  const fillStudent = (s) => {
+    setStudentId(s.id);
+    setStudentPhone(s.phone);
+    setError("");
   };
 
   const handleLogin = (e) => {
@@ -75,20 +79,12 @@ function StudentDashboard({ setPage }) {
 
     if (!foundStudent) {
       setStudent(null);
-      showTemporaryError(
-        "Student not found. Please check your Student ID and phone number."
-      );
+      showError("Student not found. Please check Student ID and phone number.");
       return;
     }
 
     setError("");
     setStudent(foundStudent);
-  };
-
-  const fillStudent = (s) => {
-    setStudentId(s.id);
-    setStudentPhone(s.phone);
-    setError("");
   };
 
   const handleLogout = () => {
@@ -107,15 +103,14 @@ function StudentDashboard({ setPage }) {
       {!student ? (
         <div className="page-card">
           <h1>Student Portal</h1>
-
           <p>
-            Login with your Student ID and phone number to view your registration,
+            Login with your Student ID and phone number to view your profile,
             course, and payment information.
           </p>
 
           <div
             style={{
-              maxWidth: "520px",
+              maxWidth: "650px",
               margin: "30px auto",
               padding: "20px",
               borderRadius: "18px",
@@ -124,7 +119,7 @@ function StudentDashboard({ setPage }) {
             }}
           >
             <h3 style={{ textAlign: "center", marginBottom: "15px" }}>
-              Test Students
+              Test Student List
             </h3>
 
             {testStudents.map((s) => (
@@ -189,7 +184,7 @@ function StudentDashboard({ setPage }) {
 
             <input
               type="tel"
-              placeholder="Enter your registered phone number"
+              placeholder="Enter registered phone number"
               value={studentPhone}
               onChange={(e) => setStudentPhone(e.target.value)}
               required
@@ -238,10 +233,16 @@ function StudentDashboard({ setPage }) {
       ) : (
         <div className="page-card">
           <h1>Welcome, {student.name}</h1>
-
           <p>Your student profile and course information are shown below.</p>
 
-          <div className="dashboard-grid">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "20px",
+              marginTop: "35px",
+            }}
+          >
             <div className="stat-card">
               <h3>Student ID</h3>
               <p>{student.id}</p>
@@ -274,7 +275,16 @@ function StudentDashboard({ setPage }) {
 
             <div className="stat-card">
               <h3>Payment Status</h3>
-              <p className={student.status === "Paid" ? "status-paid" : "status-pending"}>
+              <p
+                style={{
+                  display: "inline-block",
+                  padding: "8px 18px",
+                  borderRadius: "20px",
+                  background: student.status === "Paid" ? "#16a34a" : "#f97316",
+                  color: "#ffffff",
+                  fontWeight: "800",
+                }}
+              >
                 {student.status}
               </p>
             </div>
@@ -288,7 +298,7 @@ function StudentDashboard({ setPage }) {
           <button
             onClick={handleLogout}
             style={{
-              marginTop: "30px",
+              marginTop: "35px",
               padding: "12px 28px",
               borderRadius: "12px",
               border: "none",
