@@ -110,15 +110,15 @@ function StudentDashboard({ setPage }) {
 
           <div
             style={{
-              maxWidth: "650px",
+              maxWidth: "700px",
               margin: "30px auto",
-              padding: "20px",
-              borderRadius: "18px",
+              padding: "22px",
+              borderRadius: "20px",
               background: "#1e293b",
               border: "1px solid #334155",
             }}
           >
-            <h3 style={{ textAlign: "center", marginBottom: "15px" }}>
+            <h3 style={{ textAlign: "center", marginBottom: "18px" }}>
               Test Student List
             </h3>
 
@@ -130,14 +130,15 @@ function StudentDashboard({ setPage }) {
                 style={{
                   width: "100%",
                   marginBottom: "10px",
-                  padding: "12px",
-                  borderRadius: "12px",
+                  padding: "13px",
+                  borderRadius: "14px",
                   border: "1px solid #334155",
                   background: "#0f172a",
                   color: "#ffffff",
                   cursor: "pointer",
                   textAlign: "left",
                   fontSize: "15px",
+                  fontWeight: "600",
                 }}
               >
                 {s.id} — {s.name} — {s.phone}
@@ -233,52 +234,58 @@ function StudentDashboard({ setPage }) {
       ) : (
         <div className="page-card">
           <h1>Welcome, {student.name}</h1>
-          <p>Your student profile and course information are shown below.</p>
+          <p>Your student profile dashboard is shown below.</p>
 
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: "20px",
               marginTop: "35px",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: "22px",
             }}
           >
             <div className="stat-card">
+              <h2>🆔</h2>
               <h3>Student ID</h3>
-              <p>{student.id}</p>
+              <p style={{ color: "#60a5fa", fontWeight: "800" }}>
+                {student.id}
+              </p>
             </div>
 
             <div className="stat-card">
-              <h3>Name</h3>
+              <h2>👤</h2>
+              <h3>Student Profile</h3>
               <p>{student.name}</p>
+              <small>{student.phone}</small>
             </div>
 
             <div className="stat-card">
-              <h3>Phone</h3>
-              <p>{student.phone}</p>
-            </div>
-
-            <div className="stat-card">
+              <h2>🌐</h2>
               <h3>Language</h3>
               <p>{student.language}</p>
             </div>
 
             <div className="stat-card">
+              <h2>📚</h2>
               <h3>Course</h3>
               <p>{student.course}</p>
             </div>
 
             <div className="stat-card">
+              <h2>💰</h2>
               <h3>Course Fee</h3>
-              <p>{student.fee} ETB</p>
+              <p style={{ color: "#60a5fa", fontWeight: "800" }}>
+                {student.fee} ETB
+              </p>
             </div>
 
             <div className="stat-card">
+              <h2>📌</h2>
               <h3>Payment Status</h3>
               <p
                 style={{
                   display: "inline-block",
-                  padding: "8px 18px",
+                  padding: "8px 20px",
                   borderRadius: "20px",
                   background: student.status === "Paid" ? "#16a34a" : "#f97316",
                   color: "#ffffff",
@@ -290,8 +297,15 @@ function StudentDashboard({ setPage }) {
             </div>
 
             <div className="stat-card">
+              <h2>🎓</h2>
               <h3>Certificate Status</h3>
               <p>Not Issued</p>
+            </div>
+
+            <div className="stat-card">
+              <h2>✅</h2>
+              <h3>Account Status</h3>
+              <p style={{ color: "#22c55e", fontWeight: "800" }}>Active</p>
             </div>
           </div>
 
@@ -299,7 +313,7 @@ function StudentDashboard({ setPage }) {
             onClick={handleLogout}
             style={{
               marginTop: "35px",
-              padding: "12px 28px",
+              padding: "12px 30px",
               borderRadius: "12px",
               border: "none",
               background: "#ef4444",
