@@ -6,6 +6,7 @@ import Register from "./pages/Registration";
 import StudentDashboard from "./pages/StudentDatshboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Payments from "./pages/Payments";
+import CertificateVerification from "./pages/CertificateVerification";
 
 function App() {
   const [page, setPage] = useState("home");
@@ -25,6 +26,7 @@ function App() {
           <button onClick={() => setPage("courses")}>Courses</button>
           <button onClick={() => setPage("register")}>Register</button>
           <button onClick={() => setPage("student")}>Student Portal</button>
+          <button onClick={() => setPage("verify")}>Verify Certificate</button>
           <button onClick={() => setPage("admin")}>Admin</button>
           <button onClick={() => setPage("payments")}>Payments</button>
         </div>
@@ -55,13 +57,10 @@ function App() {
 
       <main>
         {page === "home" && <Home setPage={setPage} language={language} />}
-        {page === "courses" && (
-          <Courses setPage={setPage} language={language} />
-        )}
-        {page === "register" && (
-          <Register setPage={setPage} language={language} />
-        )}
+        {page === "courses" && <Courses setPage={setPage} language={language} />}
+        {page === "register" && <Register setPage={setPage} language={language} />}
         {page === "student" && <StudentDashboard setPage={setPage} />}
+        {page === "verify" && <CertificateVerification setPage={setPage} />}
         {page === "admin" && <AdminDashboard setPage={setPage} />}
         {page === "payments" && <Payments setPage={setPage} />}
       </main>
