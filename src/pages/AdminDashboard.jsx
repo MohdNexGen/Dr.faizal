@@ -43,7 +43,7 @@ function AdminDashboard({ setPage }) {
       return;
     }
 
-    setMessage(`✅ Payment status updated to ${newStatus}.`);
+    setMessage(`✅ Payment confirmed for ${studentId}.`);
     await loadStudents();
 
     setTimeout(() => setMessage(""), 3000);
@@ -146,6 +146,7 @@ function AdminDashboard({ setPage }) {
                     <td style={td}>{student.language}</td>
                     <td style={td}>{student.course}</td>
                     <td style={td}>{student.fee} ETB</td>
+
                     <td style={td}>
                       <span
                         className={
@@ -154,19 +155,13 @@ function AdminDashboard({ setPage }) {
                             : "status-pending"
                         }
                       >
-                        {student.payment_status}
+                        {student.payment_status === "Paid" ? "Paid" : "Pending"}
                       </span>
                     </td>
+
                     <td style={td}>
                       {student.payment_status === "Paid" ? (
-                        <button
-                          style={redBtn}
-                          onClick={() =>
-                            updatePaymentStatus(student.student_id, "Pending")
-                          }
-                        >
-                          Mark Pending
-                        </button>
+                        <span style={confirmedText}>✓ Payment Confirmed</span>
                       ) : (
                         <button
                           style={greenBtn}
@@ -174,7 +169,7 @@ function AdminDashboard({ setPage }) {
                             updatePaymentStatus(student.student_id, "Paid")
                           }
                         >
-                          Mark Paid
+                          Confirm Payment
                         </button>
                       )}
                     </td>
@@ -229,14 +224,9 @@ const greenBtn = {
   cursor: "pointer",
 };
 
-const redBtn = {
-  padding: "9px 14px",
-  borderRadius: "10px",
-  border: "none",
-  background: "#ef4444",
-  color: "#fff",
-  fontWeight: "700",
-  cursor: "pointer",
+const confirmedText = {
+  color: "#22c55e",
+  fontWeight: "800",
 };
 
 export default AdminDashboard;
