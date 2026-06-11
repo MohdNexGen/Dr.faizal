@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import emailjs from "@emailjs/browser";
+import { supabase } from "../lib/supabase";
 
 const SERVICE_ID = "nexgen_gmail";
 const ADMIN_TEMPLATE_ID = "template_zvfw3qd";
@@ -102,6 +103,26 @@ function Registration({ language = "English", setPage }) {
     });
   }
 
+  async function saveToSupabase(student) {
+    const { error } = await supabase.from("students").insert([
+      {
+        student_id: student.studentId,
+        name: student.fullName,
+        email: student.email,
+        phone: student.phone,
+        language: student.language,
+        course: student.course,
+        fee: student.feeAmount,
+        payment_status: student.paymentStatus,
+        registration_date: student.registeredAt,
+      },
+    ]);
+
+    if (error) {
+      throw error;
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setSending(true);
@@ -116,26 +137,33 @@ function Registration({ language = "English", setPage }) {
       course: form.course,
       feeAmount: form.feeAmount,
       paymentStatus: form.paymentStatus,
-      registeredAt: new Date().toLocaleDateString(),
+      registeredAt: new Date().toISOString(),
     };
 
-    const templateParams = {
-      student_id: newStudent.studentId,
-      student_name: newStudent.fullName,
-      student_email: newStudent.email,
-      student_phone: newStudent.phone,
-      student_language: newStudent.language,
-      student_course: newStudent.course,
-      fee_amount: `${newStudent.feeAmount} ETB`,
-      payment_status: newStudent.paymentStatus,
-      registered_at: newStudent.registeredAt,
-    };
+  const templateParams = {
+  to_email: newStudent.email,
+
+  student_id: newStudent.studentId,
+  student_name: newStudent.fullName,
+  student_email: newStudent.email,
+  student_phone: newStudent.phone,
+  student_language: newStudent.language,
+  student_course: newStudent.course,
+
+  fee_amount: `${newStudent.feeAmount} ETB`,
+  payment_status: newStudent.paymentStatus,
+
+  registered_at: new Date(
+    newStudent.registeredAt
+  ).toLocaleDateString(),
+};
 
     try {
       const students = getStudents();
       students.push(newStudent);
       localStorage.setItem("students", JSON.stringify(students));
 
+      await saveToSupabase(newStudent);
       await sendToGoogleSheet(newStudent);
 
       await emailjs.send(
@@ -153,7 +181,7 @@ function Registration({ language = "English", setPage }) {
       );
 
       setMessage(
-        `✅ Registered successfully. Student ID: ${newStudent.studentId}. Saved and emails sent.`
+        `✅ Registered successfully. Student ID: ${newStudent.studentId}. Saved to Supabase and emails sent.`
       );
 
       setForm({
@@ -171,7 +199,7 @@ function Registration({ language = "English", setPage }) {
       console.error("Registration error:", error);
 
       setMessage(
-        "❌ Student saved locally, but Google Sheet or email failed. Check Apps Script and EmailJS."
+        "❌ Registration failed. Check Supabase table columns, API keys, Google Sheet, or EmailJS."
       );
     } finally {
       setSending(false);
@@ -188,8 +216,8 @@ function Registration({ language = "English", setPage }) {
         <h2>Student Registration</h2>
 
         <p className="form-note">
-          Register students with unique ID, course fee, payment status, Google
-          Sheet backup, and email confirmation.
+          Register students with unique ID, course fee, payment status, Supabase
+          database, Google Sheet backup, and email confirmation.
         </p>
 
         {message && <p className="success-message">{message}</p>}
