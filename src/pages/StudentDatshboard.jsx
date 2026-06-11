@@ -1,6 +1,7 @@
 import { useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { supabase } from "../lib/supabase";
 
 const quizQuestions = [
   {
@@ -32,22 +33,17 @@ function StudentDashboard({ setPage }) {
   const [answers, setAnswers] = useState({});
   const [latestScore, setLatestScore] = useState(null);
   const [showCertificate, setShowCertificate] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const normalize = (value) => String(value || "").trim().toLowerCase();
   const onlyNumbers = (value) => String(value || "").replace(/\D/g, "");
 
-  function getStudents() {
-    return JSON.parse(localStorage.getItem("students")) || [];
-  }
-
-  const students = getStudents();
-
-  const getName = (s) => s.fullName || s.name || "Unknown Student";
-  const getId = (s) => s.studentId || s.student_id || s.id || "";
+  const getName = (s) => s.name || s.fullName || "Unknown Student";
+  const getId = (s) => s.student_id || s.studentId || s.id || "";
   const getPhone = (s) => s.phone || "";
-  const getFee = (s) => s.feeAmount || s.fee || "3000";
+  const getFee = (s) => s.fee || s.feeAmount || "3000";
   const getPaymentStatus = (s) =>
-    s.paymentStatus || s.payment_status || s.status || "Pending";
+    s.payment_status || s.paymentStatus || s.status || "Pending";
 
   const getBestScore = () => {
     if (latestScore !== null) return latestScore;
@@ -58,35 +54,45 @@ function StudentDashboard({ setPage }) {
 
   const showError = (message) => {
     setError(message);
-    setTimeout(() => setError(""), 3000);
+    setTimeout(() => setError(""), 4000);
   };
 
-  const fillStudent = (s) => {
-    setStudentId(getId(s));
-    setStudentPhone(getPhone(s));
-    setError("");
-  };
-
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-
-    const foundStudent = students.find(
-      (s) =>
-        normalize(getId(s)) === normalize(studentId) &&
-        onlyNumbers(getPhone(s)) === onlyNumbers(studentPhone)
-    );
-
-    if (!foundStudent) {
-      setStudent(null);
-      showError("Student not found. Please check Student ID and phone number.");
-      return;
-    }
-
-    setStudent(foundStudent);
-    setAnswers({});
-    setLatestScore(null);
-    setShowCertificate(false);
+    setLoading(true);
     setError("");
+
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("student_id", studentId.trim())
+        .single();
+
+      if (error || !data) {
+        setStudent(null);
+        showError("Student not found. Please check Student ID.");
+        return;
+      }
+
+      if (onlyNumbers(data.phone) !== onlyNumbers(studentPhone)) {
+        setStudent(null);
+        showError("Phone number does not match this Student ID.");
+        return;
+      }
+
+      setStudent(data);
+      setAnswers({});
+      setLatestScore(null);
+      setShowCertificate(false);
+      setError("");
+    } catch (err) {
+      console.error("Student login error:", err);
+      setStudent(null);
+      showError("Login failed. Check Supabase connection.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAnswer = (index, option) => {
@@ -145,7 +151,6 @@ function StudentDashboard({ setPage }) {
     const pageHeight = pdf.internal.pageSize.getHeight();
 
     pdf.addImage(imgData, "PNG", 10, 10, pageWidth - 20, pageHeight - 20);
-
     pdf.save(`${getName(student).replace(/\s+/g, "-")}-Certificate.pdf`);
   };
 
@@ -159,31 +164,6 @@ function StudentDashboard({ setPage }) {
         <div className="page-card">
           <h1>Student Portal</h1>
           <p>Login using the Student ID and phone number used during registration.</p>
-
-          <div style={testBox}>
-            <h3 style={{ textAlign: "center" }}>Registered Student List</h3>
-
-            {students.length === 0 ? (
-              <p style={{ textAlign: "center", color: "#cbd5e1" }}>
-                No students found yet. Register a student first.
-              </p>
-            ) : (
-              students.map((s, index) => (
-                <button
-                  key={`${getId(s)}-${index}`}
-                  onClick={() => fillStudent(s)}
-                  style={testBtn}
-                >
-                  <strong>{getId(s)}</strong> — {getName(s)} — {getPhone(s)}
-                  <br />
-                  <small>
-                    {s.language || "English"} | {s.course || "No course"} |{" "}
-                    {getFee(s)} ETB | {getPaymentStatus(s)}
-                  </small>
-                </button>
-              ))
-            )}
-          </div>
 
           <form onSubmit={handleLogin} style={formStyle}>
             <label>Student ID</label>
@@ -206,7 +186,9 @@ function StudentDashboard({ setPage }) {
 
             {error && <p style={errorStyle}>{error}</p>}
 
-            <button style={blueButton}>Login</button>
+            <button style={blueButton} disabled={loading}>
+              {loading ? "Checking..." : "Login"}
+            </button>
           </form>
         </div>
       ) : (
@@ -357,28 +339,6 @@ function StudentDashboard({ setPage }) {
     </section>
   );
 }
-
-const testBox = {
-  maxWidth: "900px",
-  margin: "30px auto",
-  padding: "22px",
-  borderRadius: "20px",
-  background: "#1e293b",
-  border: "1px solid #334155",
-};
-
-const testBtn = {
-  width: "100%",
-  marginBottom: "12px",
-  padding: "16px",
-  borderRadius: "14px",
-  border: "1px solid #334155",
-  background: "#0f172a",
-  color: "#fff",
-  cursor: "pointer",
-  textAlign: "left",
-  fontSize: "16px",
-};
 
 const formStyle = {
   maxWidth: "520px",

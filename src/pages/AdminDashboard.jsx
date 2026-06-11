@@ -1,100 +1,58 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 
-function StudentDashboard({ setPage }) {
-  const [studentId, setStudentId] = useState("");
-  const [studentPhone, setStudentPhone] = useState("");
-  const [student, setStudent] = useState(null);
-  const [error, setError] = useState("");
+function AdminDashboard({ setPage }) {
+  const [students, setStudents] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
 
-  const getAllStudents = () => {
-    const possibleKeys = [
-      "students",
-      "registeredStudents",
-      "studentRecords",
-      "drFaizalStudents",
-      "registrations",
-    ];
+  async function loadStudents() {
+    setLoading(true);
 
-    let allStudents = [];
+    const { data, error } = await supabase
+      .from("students")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    possibleKeys.forEach((key) => {
-      try {
-        const data = JSON.parse(localStorage.getItem(key)) || [];
+    if (error) {
+      console.error("Load students error:", error);
+      setMessage("❌ Failed to load students from Supabase.");
+      setStudents([]);
+    } else {
+      setStudents(data || []);
+      setMessage("");
+    }
 
-        if (Array.isArray(data)) {
-          allStudents = [...allStudents, ...data];
-        }
-      } catch {
-        // ignore invalid localStorage data
-      }
-    });
+    setLoading(false);
+  }
 
-    return allStudents;
-  };
+  useEffect(() => {
+    loadStudents();
+  }, []);
 
-  const normalize = (value) =>
-    String(value || "")
-      .trim()
-      .toLowerCase();
+  async function updatePaymentStatus(studentId, newStatus) {
+    const { error } = await supabase
+      .from("students")
+      .update({ payment_status: newStatus })
+      .eq("student_id", studentId);
 
-  const onlyNumbers = (value) =>
-    String(value || "")
-      .replace(/\D/g, "")
-      .trim();
-
-  const getStudentId = (s) =>
-    s.id || s.studentId || s.studentID || s.StudentID || s["Student ID"];
-
-  const getStudentName = (s) =>
-    s.name || s.studentName || s.fullName || s.Name || s["Student Name"];
-
-  const getStudentPhone = (s) =>
-    s.phone || s.studentPhone || s.phoneNumber || s.Phone || s["Phone Number"];
-
-  const getStudentLanguage = (s) =>
-    s.language || s.Language || s.studentLanguage || "Not selected";
-
-  const getStudentCourse = (s) =>
-    s.course || s.Course || s.selectedCourse || "Full Web Development";
-
-  const getStudentFee = (s) => s.fee || s.Fee || s.courseFee || "3000";
-
-  const getStudentStatus = (s) =>
-    s.status || s.Status || s.paymentStatus || s["Payment Status"] || "Pending";
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setError("");
-
-    const students = getAllStudents();
-
-    const foundStudent = students.find((s) => {
-      const savedId = normalize(getStudentId(s));
-      const savedPhone = onlyNumbers(getStudentPhone(s));
-
-      return (
-        savedId === normalize(studentId) &&
-        savedPhone === onlyNumbers(studentPhone)
-      );
-    });
-
-    if (!foundStudent) {
-      setStudent(null);
-      setError(
-        "Student not found. Please check your Student ID and phone number."
-      );
+    if (error) {
+      console.error("Payment update error:", error);
+      setMessage("❌ Failed to update payment status.");
       return;
     }
 
-    setStudent(foundStudent);
-  };
+    setMessage(`✅ Payment status updated to ${newStatus}.`);
+    await loadStudents();
 
-  const handleLogout = () => {
-    setStudent(null);
-    setStudentId("");
-    setStudentPhone("");
-    setError("");
-  };
+    setTimeout(() => setMessage(""), 3000);
+  }
+
+  const filteredStudents = students.filter((student) => {
+    const text = `${student.student_id} ${student.name} ${student.email} ${student.phone} ${student.course} ${student.payment_status}`.toLowerCase();
+    return text.includes(search.toLowerCase());
+  });
 
   return (
     <section className="page-section">
@@ -102,177 +60,183 @@ function StudentDashboard({ setPage }) {
         ← Back to Home
       </button>
 
-      {!student ? (
-        <div className="page-card">
-          <h1>Student Portal</h1>
+      <div className="page-card">
+        <h1>Admin Dashboard</h1>
+        <p>Manage students, courses, fees, and payment status from Supabase.</p>
 
-          <p>
-            Login with your Student ID and phone number to view your registration,
-            course, and payment information.
-          </p>
+        {message && <p className="success-message">{message}</p>}
 
-          <form
-            onSubmit={handleLogin}
-            style={{
-              maxWidth: "520px",
-              margin: "35px auto 0",
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-              textAlign: "left",
-            }}
-          >
-            <label style={{ fontSize: "18px", fontWeight: "700" }}>
-              Student ID
-            </label>
-
-            <input
-              type="text"
-              placeholder="Example: DFS-2026-0001"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "12px",
-                border: "1px solid #334155",
-                background: "#0f172a",
-                color: "#ffffff",
-                fontSize: "17px",
-                outline: "none",
-              }}
-            />
-
-            <label style={{ fontSize: "18px", fontWeight: "700" }}>
-              Phone Number
-            </label>
-
-            <input
-              type="tel"
-              placeholder="Enter your registered phone number"
-              value={studentPhone}
-              onChange={(e) => setStudentPhone(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: "12px",
-                border: "1px solid #334155",
-                background: "#0f172a",
-                color: "#ffffff",
-                fontSize: "17px",
-                outline: "none",
-              }}
-            />
-
-            {error && (
-              <p
-                style={{
-                  color: "#ff6b6b",
-                  textAlign: "center",
-                  fontWeight: "700",
-                  margin: "5px 0",
-                }}
-              >
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              style={{
-                marginTop: "10px",
-                padding: "14px",
-                borderRadius: "12px",
-                border: "none",
-                background: "#2563eb",
-                color: "#ffffff",
-                fontSize: "18px",
-                fontWeight: "700",
-                cursor: "pointer",
-              }}
-            >
-              Login
-            </button>
-          </form>
-        </div>
-      ) : (
-        <div className="page-card">
-          <h1>Welcome, {getStudentName(student)}</h1>
-
-          <p>Your student profile and course information are shown below.</p>
-
-          <div className="dashboard-grid">
-            <div className="stat-card">
-              <h3>Student ID</h3>
-              <p>{getStudentId(student)}</p>
-            </div>
-
-            <div className="stat-card">
-              <h3>Name</h3>
-              <p>{getStudentName(student)}</p>
-            </div>
-
-            <div className="stat-card">
-              <h3>Phone</h3>
-              <p>{getStudentPhone(student)}</p>
-            </div>
-
-            <div className="stat-card">
-              <h3>Language</h3>
-              <p>{getStudentLanguage(student)}</p>
-            </div>
-
-            <div className="stat-card">
-              <h3>Course</h3>
-              <p>{getStudentCourse(student)}</p>
-            </div>
-
-            <div className="stat-card">
-              <h3>Course Fee</h3>
-              <p>{getStudentFee(student)} ETB</p>
-            </div>
-
-            <div className="stat-card">
-              <h3>Payment Status</h3>
-              <p
-                className={
-                  getStudentStatus(student) === "Paid"
-                    ? "status-paid"
-                    : "status-pending"
-                }
-              >
-                {getStudentStatus(student)}
-              </p>
-            </div>
-
-            <div className="stat-card">
-              <h3>Certificate Status</h3>
-              <p>Not Issued</p>
-            </div>
+        <div className="dashboard-grid">
+          <div className="stat-card">
+            <h3>Total Students</h3>
+            <p>{students.length}</p>
           </div>
 
-          <button
-            onClick={handleLogout}
-            style={{
-              marginTop: "30px",
-              padding: "12px 28px",
-              borderRadius: "12px",
-              border: "none",
-              background: "#ef4444",
-              color: "#ffffff",
-              fontSize: "18px",
-              fontWeight: "700",
-              cursor: "pointer",
-            }}
-          >
-            Logout
-          </button>
+          <div className="stat-card">
+            <h3>Paid</h3>
+            <p>{students.filter((s) => s.payment_status === "Paid").length}</p>
+          </div>
+
+          <div className="stat-card">
+            <h3>Pending</h3>
+            <p>
+              {students.filter((s) => s.payment_status !== "Paid").length}
+            </p>
+          </div>
+
+          <div className="stat-card">
+            <h3>Total Fees</h3>
+            <p>
+              {students.reduce((sum, s) => sum + Number(s.fee || 0), 0)} ETB
+            </p>
+          </div>
         </div>
-      )}
+
+        <input
+          type="text"
+          placeholder="Search by ID, name, email, phone, course..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            width: "100%",
+            margin: "25px 0",
+            padding: "14px",
+            borderRadius: "12px",
+            border: "1px solid #334155",
+            background: "#0f172a",
+            color: "#fff",
+            fontSize: "16px",
+          }}
+        />
+
+        {loading ? (
+          <h2>Loading students...</h2>
+        ) : filteredStudents.length === 0 ? (
+          <h2>No students found.</h2>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                marginTop: "20px",
+              }}
+            >
+              <thead>
+                <tr>
+                  <th style={th}>Student ID</th>
+                  <th style={th}>Name</th>
+                  <th style={th}>Email</th>
+                  <th style={th}>Phone</th>
+                  <th style={th}>Language</th>
+                  <th style={th}>Course</th>
+                  <th style={th}>Fee</th>
+                  <th style={th}>Payment</th>
+                  <th style={th}>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filteredStudents.map((student) => (
+                  <tr key={student.id}>
+                    <td style={td}>{student.student_id}</td>
+                    <td style={td}>{student.name}</td>
+                    <td style={td}>{student.email}</td>
+                    <td style={td}>{student.phone}</td>
+                    <td style={td}>{student.language}</td>
+                    <td style={td}>{student.course}</td>
+                    <td style={td}>{student.fee} ETB</td>
+                    <td style={td}>
+                      <span
+                        className={
+                          student.payment_status === "Paid"
+                            ? "status-paid"
+                            : "status-pending"
+                        }
+                      >
+                        {student.payment_status}
+                      </span>
+                    </td>
+                    <td style={td}>
+                      {student.payment_status === "Paid" ? (
+                        <button
+                          style={redBtn}
+                          onClick={() =>
+                            updatePaymentStatus(student.student_id, "Pending")
+                          }
+                        >
+                          Mark Pending
+                        </button>
+                      ) : (
+                        <button
+                          style={greenBtn}
+                          onClick={() =>
+                            updatePaymentStatus(student.student_id, "Paid")
+                          }
+                        >
+                          Mark Paid
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <button onClick={loadStudents} style={blueBtn}>
+          Refresh Students
+        </button>
+      </div>
     </section>
   );
 }
 
-export default StudentDashboard;
+const th = {
+  padding: "12px",
+  border: "1px solid #334155",
+  background: "#1e293b",
+  color: "#fff",
+  textAlign: "left",
+};
+
+const td = {
+  padding: "12px",
+  border: "1px solid #334155",
+  color: "#fff",
+  textAlign: "left",
+};
+
+const blueBtn = {
+  marginTop: "25px",
+  padding: "12px 25px",
+  borderRadius: "12px",
+  border: "none",
+  background: "#2563eb",
+  color: "#fff",
+  fontWeight: "700",
+  cursor: "pointer",
+};
+
+const greenBtn = {
+  padding: "9px 14px",
+  borderRadius: "10px",
+  border: "none",
+  background: "#22c55e",
+  color: "#fff",
+  fontWeight: "700",
+  cursor: "pointer",
+};
+
+const redBtn = {
+  padding: "9px 14px",
+  borderRadius: "10px",
+  border: "none",
+  background: "#ef4444",
+  color: "#fff",
+  fontWeight: "700",
+  cursor: "pointer",
+};
+
+export default AdminDashboard;
