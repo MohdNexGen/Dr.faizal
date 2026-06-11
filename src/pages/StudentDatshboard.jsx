@@ -1,4 +1,6 @@
 import { useState } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const quizQuestions = [
   {
@@ -41,12 +43,11 @@ function StudentDashboard({ setPage }) {
   const students = getStudents();
 
   const getName = (s) => s.fullName || s.name || "Unknown Student";
-  const getId = (s) => s.studentId || s.id || "";
+  const getId = (s) => s.studentId || s.student_id || s.id || "";
   const getPhone = (s) => s.phone || "";
   const getFee = (s) => s.feeAmount || s.fee || "3000";
-  const getPaymentStatus = (s) => s.paymentStatus || s.status || "Pending";
-
-  const getProgress = () => 0;
+  const getPaymentStatus = (s) =>
+    s.paymentStatus || s.payment_status || s.status || "Pending";
 
   const getBestScore = () => {
     if (latestScore !== null) return latestScore;
@@ -113,8 +114,39 @@ function StudentDashboard({ setPage }) {
     setShowCertificate(false);
   };
 
-  const printCertificate = () => {
-    window.print();
+  const downloadCertificate = async () => {
+    const certificate = document.getElementById("certificate-card");
+
+    if (!certificate) {
+      alert("Certificate not found");
+      return;
+    }
+
+    const downloadButton = document.getElementById("certificate-download-btn");
+    if (downloadButton) downloadButton.style.display = "none";
+
+    const canvas = await html2canvas(certificate, {
+      scale: 3,
+      backgroundColor: "#ffffff",
+      useCORS: true,
+    });
+
+    if (downloadButton) downloadButton.style.display = "inline-block";
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    pdf.addImage(imgData, "PNG", 10, 10, pageWidth - 20, pageHeight - 20);
+
+    pdf.save(`${getName(student).replace(/\s+/g, "-")}-Certificate.pdf`);
   };
 
   return (
@@ -284,26 +316,35 @@ function StudentDashboard({ setPage }) {
           </div>
 
           {showCertificate && (
-            <div style={certificatePreview} className="certificate-print">
-              <h1>Certificate of Completion</h1>
-              <p>This certificate is proudly presented to</p>
-              <h2>{getName(student)}</h2>
-              <p>For successfully completing</p>
-              <h3>{student.course}</h3>
-              <p>Student ID: {getId(student)}</p>
-              <p>Quiz Score: {getBestScore()}%</p>
-              <p>Dr. Faizal School</p>
-              <small>English | العربية | Soomaali</small>
+            <div
+              id="certificate-card"
+              style={certificatePreview}
+              className="certificate-print"
+            >
+              <h1 style={certificateTitleStyle}>Certificate of Completion</h1>
+              <p style={certificateTextStyle}>
+                This certificate is proudly presented to
+              </p>
+              <h2 style={certificateNameStyle}>{getName(student)}</h2>
+              <p style={certificateTextStyle}>For successfully completing</p>
+              <h3 style={certificateCourseStyle}>{student.course}</h3>
+              <p style={certificateTextStyle}>Student ID: {getId(student)}</p>
+              <p style={certificateTextStyle}>Quiz Score: {getBestScore()}%</p>
+              <p style={certificateSchoolStyle}>Dr. Faizal School</p>
+              <small style={certificateSmallStyle}>
+                English | العربية | Soomaali
+              </small>
 
               <br />
               <br />
 
               <button
-                onClick={printCertificate}
+                id="certificate-download-btn"
+                onClick={downloadCertificate}
                 style={blueButton}
                 className="no-print"
               >
-                Download / Print Certificate
+                Download Certificate
               </button>
             </div>
           )}
@@ -395,13 +436,51 @@ const certificateBox = {
 
 const certificatePreview = {
   margin: "35px auto",
-  padding: "45px",
-  maxWidth: "780px",
+  padding: "55px",
+  maxWidth: "850px",
   borderRadius: "20px",
-  background: "#f8fafc",
-  color: "#0f172a",
+  background: "#ffffff",
+  color: "#111827",
   border: "6px double #2563eb",
   textAlign: "center",
+};
+
+const certificateTitleStyle = {
+  color: "#111827",
+  fontSize: "42px",
+  fontWeight: "900",
+  marginBottom: "22px",
+};
+
+const certificateNameStyle = {
+  color: "#111827",
+  fontSize: "38px",
+  fontWeight: "900",
+  margin: "14px 0",
+};
+
+const certificateCourseStyle = {
+  color: "#111827",
+  fontSize: "24px",
+  fontWeight: "900",
+};
+
+const certificateTextStyle = {
+  color: "#111827",
+  fontSize: "18px",
+  fontWeight: "600",
+};
+
+const certificateSchoolStyle = {
+  color: "#111827",
+  fontSize: "20px",
+  fontWeight: "800",
+};
+
+const certificateSmallStyle = {
+  color: "#111827",
+  fontSize: "16px",
+  fontWeight: "700",
 };
 
 const blueButton = {
