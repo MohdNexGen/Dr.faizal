@@ -59,13 +59,16 @@ function Registration({ language = "English", setPage }) {
     }));
   }, [selectedLanguage]);
 
-  function getStudents() {
-    return JSON.parse(localStorage.getItem("students")) || [];
-  }
+  async function generateStudentId() {
+    const { count, error } = await supabase
+      .from("students")
+      .select("*", { count: "exact", head: true });
 
-  function generateStudentId() {
-    const students = getStudents();
-    const nextNumber = students.length + 1;
+    if (error) {
+      throw error;
+    }
+
+    const nextNumber = (count || 0) + 1;
     return `DFS-2026-${String(nextNumber).padStart(4, "0")}`;
   }
 
@@ -128,40 +131,36 @@ function Registration({ language = "English", setPage }) {
     setSending(true);
     setMessage("");
 
-    const newStudent = {
-      studentId: generateStudentId(),
-      fullName: form.fullName,
-      email: form.email,
-      phone: form.phone,
-      language: form.language,
-      course: form.course,
-      feeAmount: form.feeAmount,
-      paymentStatus: form.paymentStatus,
-      registeredAt: new Date().toISOString(),
-    };
-
-  const templateParams = {
-  to_email: newStudent.email,
-
-  student_id: newStudent.studentId,
-  student_name: newStudent.fullName,
-  student_email: newStudent.email,
-  student_phone: newStudent.phone,
-  student_language: newStudent.language,
-  student_course: newStudent.course,
-
-  fee_amount: `${newStudent.feeAmount} ETB`,
-  payment_status: newStudent.paymentStatus,
-
-  registered_at: new Date(
-    newStudent.registeredAt
-  ).toLocaleDateString(),
-};
-
     try {
-      const students = getStudents();
-      students.push(newStudent);
-      localStorage.setItem("students", JSON.stringify(students));
+      const studentId = await generateStudentId();
+
+      const newStudent = {
+        studentId,
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        language: form.language,
+        course: form.course,
+        feeAmount: form.feeAmount,
+        paymentStatus: form.paymentStatus,
+        registeredAt: new Date().toISOString(),
+      };
+
+      const templateParams = {
+        to_email: newStudent.email,
+
+        student_id: newStudent.studentId,
+        student_name: newStudent.fullName,
+        student_email: newStudent.email,
+        student_phone: newStudent.phone,
+        student_language: newStudent.language,
+        student_course: newStudent.course,
+
+        fee_amount: `${newStudent.feeAmount} ETB`,
+        payment_status: newStudent.paymentStatus,
+
+        registered_at: new Date(newStudent.registeredAt).toLocaleDateString(),
+      };
 
       await saveToSupabase(newStudent);
       await sendToGoogleSheet(newStudent);

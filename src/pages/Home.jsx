@@ -1,6 +1,6 @@
 const homeText = {
   English: {
-    title: "Dr. Faizal School",
+    title: "Najash Colledge",
     subtitle:
       "Professional multilingual school management system for students, courses, payments, and administration.",
     register: "Student Registration",
