@@ -8,27 +8,64 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Payments from "./pages/Payments";
 import CertificateVerification from "./pages/CertificateVerification";
 
+const text = {
+  English: {
+    school: "Najash College",
+    home: "Home",
+    courses: "Courses",
+    register: "Register",
+    student: "Student Portal",
+    verify: "Verify Certificate",
+    admin: "Admin",
+    payments: "Payments",
+    rights: "© 2026 All Rights Reserved",
+  },
+  Arabic: {
+    school: "كلية النجاشي",
+    home: "الرئيسية",
+    courses: "الدورات",
+    register: "التسجيل",
+    student: "بوابة الطالب",
+    verify: "التحقق من الشهادة",
+    admin: "الإدارة",
+    payments: "المدفوعات",
+    rights: "© 2026 جميع الحقوق محفوظة",
+  },
+  Somali: {
+    school: "Kulliyadda Najash",
+    home: "Bogga Hore",
+    courses: "Koorsooyinka",
+    register: "Isdiiwaangeli",
+    student: "Bogga Ardayga",
+    verify: "Hubi Shahaadada",
+    admin: "Maamulka",
+    payments: "Lacag-bixinta",
+    rights: "© 2026 Xuquuqda oo dhan way xafidan tahay",
+  },
+};
+
 function App() {
   const [page, setPage] = useState("home");
   const [language, setLanguage] = useState("English");
 
+  const t = text[language];
   const goHome = () => setPage("home");
 
   return (
-    <div className="app">
+    <div className="app" dir={language === "Arabic" ? "rtl" : "ltr"}>
       <nav className="navbar">
         <h2 className="logo" onClick={goHome}>
-          Dr. Faizal School
+          {t.school}
         </h2>
 
         <div className="nav-buttons">
-          <button onClick={() => setPage("home")}>Home</button>
-          <button onClick={() => setPage("courses")}>Courses</button>
-          <button onClick={() => setPage("register")}>Register</button>
-          <button onClick={() => setPage("student")}>Student Portal</button>
-          <button onClick={() => setPage("verify")}>Verify Certificate</button>
-          <button onClick={() => setPage("admin")}>Admin</button>
-          <button onClick={() => setPage("payments")}>Payments</button>
+          <button onClick={() => setPage("home")}>{t.home}</button>
+          <button onClick={() => setPage("courses")}>{t.courses}</button>
+          <button onClick={() => setPage("register")}>{t.register}</button>
+          <button onClick={() => setPage("student")}>{t.student}</button>
+          <button onClick={() => setPage("verify")}>{t.verify}</button>
+          <button onClick={() => setPage("admin")}>{t.admin}</button>
+          <button onClick={() => setPage("payments")}>{t.payments}</button>
         </div>
       </nav>
 
@@ -66,9 +103,9 @@ function App() {
       </main>
 
       <footer className="footer">
-        <p>Dr. Faizal School</p>
+        <p>{t.school}</p>
         <p>English | العربية | Soomaali</p>
-        <small>© 2026 All Rights Reserved</small>
+        <small>{t.rights}</small>
       </footer>
     </div>
   );
