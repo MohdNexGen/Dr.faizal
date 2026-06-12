@@ -1,35 +1,35 @@
 const homeText = {
   English: {
-    title: "Najash Colledge",
+    title: "Najash College",
     subtitle:
-      "Professional multilingual school management system for students, courses, payments, and administration.",
+      "Professional multilingual school management system for students, courses, payments, certificates, and administration.",
     register: "Student Registration",
     courses: "Available Courses",
     payments: "Payments & Fees",
     dashboard: "School Dashboard",
   },
   Arabic: {
-    title: "مدرسة د. فيصل",
+    title: "كلية النجاشي",
     subtitle:
-      "نظام مدرسي احترافي متعدد اللغات لإدارة الطلاب والدورات والمدفوعات والإدارة.",
+      "نظام إدارة مدرسي احترافي متعدد اللغات لإدارة الطلاب والدورات والمدفوعات والشهادات والإدارة.",
     register: "تسجيل الطلاب",
     courses: "الدورات المتاحة",
     payments: "المدفوعات والرسوم",
-    dashboard: "لوحة الإدارة",
+    dashboard: "لوحة إدارة المدرسة",
   },
   Somali: {
-    title: "Dugsiga Dr. Faizal",
+    title: "Kulliyadda Najash",
     subtitle:
-      "Nidaam dugsi oo luuqado badan ah oo lagu maamulo ardayda, koorsooyinka, lacagaha, iyo maamulka.",
+      "Nidaam dugsi oo xirfad leh, luuqado badanna taageera, laguna maamulo ardayda, koorsooyinka, lacagaha, shahaadooyinka, iyo maamulka.",
     register: "Diiwaangelinta Ardayga",
     courses: "Koorsooyinka La Heli Karo",
     payments: "Lacagaha & Khidmadaha",
-    dashboard: "Dashboard-ka Dugsiga",
+    dashboard: "Maamulka Dugsiga",
   },
 };
 
 function Home({ setPage, language }) {
-  const text = homeText[language];
+  const text = homeText[language] || homeText.English;
 
   return (
     <main className="page-container">
