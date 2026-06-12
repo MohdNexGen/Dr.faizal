@@ -3,6 +3,9 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { supabase } from "../lib/supabase";
 
+const SCHOOL_NAME = "Najash College";
+const CERTIFICATE_LANGUAGES = "English | Arabic | Soomaali";
+
 const quizQuestions = [
   {
     question: "What does HTML stand for?",
@@ -35,15 +38,20 @@ function StudentDashboard({ setPage }) {
   const [showCertificate, setShowCertificate] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const normalize = (value) => String(value || "").trim().toLowerCase();
   const onlyNumbers = (value) => String(value || "").replace(/\D/g, "");
 
-  const getName = (s) => s.name || s.fullName || "Unknown Student";
+  const getName = (s) => s.name || s.full_name || s.fullName || "Unknown Student";
   const getId = (s) => s.student_id || s.studentId || s.id || "";
-  const getPhone = (s) => s.phone || "";
-  const getFee = (s) => s.fee || s.feeAmount || "3000";
+  const getFee = (s) => s.fee || s.fee_amount || s.feeAmount || "3000";
   const getPaymentStatus = (s) =>
     s.payment_status || s.paymentStatus || s.status || "Pending";
+  const getPaymentMethod = (s) =>
+    s.payment_method || s.paymentMethod || "Manual";
+  const getPaymentReference = (s) =>
+    s.payment_reference || s.paymentReference || "Not available";
+
+  const isPaymentPaid = (s) =>
+    String(getPaymentStatus(s)).toLowerCase().includes("paid");
 
   const getBestScore = () => {
     if (latestScore !== null) return latestScore;
@@ -51,6 +59,13 @@ function StudentDashboard({ setPage }) {
   };
 
   const isPassed = () => latestScore !== null && latestScore >= 70;
+
+  const getToday = () =>
+    new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 
   const showError = (message) => {
     setError(message);
@@ -150,7 +165,7 @@ function StudentDashboard({ setPage }) {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    pdf.addImage(imgData, "PNG", 10, 10, pageWidth - 20, pageHeight - 20);
+    pdf.addImage(imgData, "PNG", 8, 8, pageWidth - 16, pageHeight - 16);
     pdf.save(`${getName(student).replace(/\s+/g, "-")}-Certificate.pdf`);
   };
 
@@ -195,13 +210,19 @@ function StudentDashboard({ setPage }) {
         <div className="page-card">
           <div className="no-print">
             <h1>Welcome, {getName(student)}</h1>
-            <p>Student dashboard with quiz and certificate system.</p>
+            <p>Student dashboard with payment record, quiz and certificate system.</p>
 
             <div style={gridStyle}>
               <div className="stat-card">
                 <h2>🆔</h2>
                 <h3>Student ID</h3>
                 <p style={blueText}>{getId(student)}</p>
+              </div>
+
+              <div className="stat-card">
+                <h2>👤</h2>
+                <h3>Name</h3>
+                <p>{getName(student)}</p>
               </div>
 
               <div className="stat-card">
@@ -212,14 +233,33 @@ function StudentDashboard({ setPage }) {
 
               <div className="stat-card">
                 <h2>💰</h2>
-                <h3>Course Fee</h3>
+                <h3>Fee</h3>
                 <p>{getFee(student)} ETB</p>
               </div>
 
               <div className="stat-card">
+                <h2>✅</h2>
+                <h3>Payment Status</h3>
+                <p
+                  style={{
+                    ...badgeStyle,
+                    background: isPaymentPaid(student) ? "#16a34a" : "#f97316",
+                  }}
+                >
+                  {getPaymentStatus(student)}
+                </p>
+              </div>
+
+              <div className="stat-card">
                 <h2>💳</h2>
-                <h3>Payment</h3>
-                <p>{getPaymentStatus(student)}</p>
+                <h3>Payment Method</h3>
+                <p>{getPaymentMethod(student)}</p>
+              </div>
+
+              <div className="stat-card">
+                <h2>🔖</h2>
+                <h3>Payment Reference</h3>
+                <p style={smallText}>{getPaymentReference(student)}</p>
               </div>
 
               <div className="stat-card">
@@ -284,7 +324,7 @@ function StudentDashboard({ setPage }) {
                 <h2>🎓 Certificate Ready</h2>
                 <p>
                   Congratulations <strong>{getName(student)}</strong>. You are
-                  eligible for your Dr. Faizal School certificate.
+                  eligible for your {SCHOOL_NAME} certificate.
                 </p>
 
                 <button
@@ -303,31 +343,78 @@ function StudentDashboard({ setPage }) {
               style={certificatePreview}
               className="certificate-print"
             >
-              <h1 style={certificateTitleStyle}>Certificate of Completion</h1>
-              <p style={certificateTextStyle}>
-                This certificate is proudly presented to
-              </p>
-              <h2 style={certificateNameStyle}>{getName(student)}</h2>
-              <p style={certificateTextStyle}>For successfully completing</p>
-              <h3 style={certificateCourseStyle}>{student.course}</h3>
-              <p style={certificateTextStyle}>Student ID: {getId(student)}</p>
-              <p style={certificateTextStyle}>Quiz Score: {getBestScore()}%</p>
-              <p style={certificateSchoolStyle}>Dr. Faizal School</p>
-              <small style={certificateSmallStyle}>
-                English | العربية | Soomaali
-              </small>
+              <div style={certificateBorder}>
+                <div style={crestStyle}>N</div>
+                <p style={estStyle}>EST. 2026</p>
 
-              <br />
-              <br />
+                <h1 style={certificateTitleStyle}>CERTIFICATE</h1>
+                <h2 style={certificateSubTitleStyle}>OF COMPLETION</h2>
 
-              <button
-                id="certificate-download-btn"
-                onClick={downloadCertificate}
-                style={blueButton}
-                className="no-print"
-              >
-                Download Certificate
-              </button>
+                <p style={certificateTextStyle}>
+                  This certificate is proudly presented to
+                </p>
+
+                <h2 style={certificateNameStyle}>{getName(student)}</h2>
+
+                <p style={certificateTextStyle}>For successfully completing</p>
+                <h3 style={certificateCourseStyle}>{student.course}</h3>
+
+                <div style={certificateInfoRow}>
+                  <div style={certificateInfoItem}>
+                    <strong>Student ID:</strong>
+                    <br />
+                    {getId(student)}
+                  </div>
+
+                  <div style={certificateInfoItem}>
+                    <strong>Quiz Score:</strong>
+                    <br />
+                    {getBestScore()}%
+                  </div>
+
+                  <div style={certificateInfoItem}>
+                    <strong>Date:</strong>
+                    <br />
+                    {getToday()}
+                  </div>
+                </div>
+
+                <div style={certificateBottom}>
+                  <div style={sealStyle}>
+                    <div style={sealInnerStyle}>
+                      NAJASH
+                      <br />
+                      COLLEGE
+                      <br />
+                      ★ ★ ★
+                    </div>
+                  </div>
+
+                  <div>
+                    <p style={certificateSchoolStyle}>{SCHOOL_NAME}</p>
+                    <small style={certificateSmallStyle}>
+                      {CERTIFICATE_LANGUAGES}
+                    </small>
+                  </div>
+
+                  <div style={signatureBox}>
+                    <p style={signatureText}>Najash College</p>
+                    <div style={signatureLine}></div>
+                    <small style={certificateSmallStyle}>
+                      Authorized Signature
+                    </small>
+                  </div>
+                </div>
+
+                <button
+                  id="certificate-download-btn"
+                  onClick={downloadCertificate}
+                  style={blueButton}
+                  className="no-print"
+                >
+                  Download Certificate
+                </button>
+              </div>
             </div>
           )}
 
@@ -396,51 +483,170 @@ const certificateBox = {
 
 const certificatePreview = {
   margin: "35px auto",
-  padding: "55px",
-  maxWidth: "850px",
-  borderRadius: "20px",
-  background: "#ffffff",
-  color: "#111827",
-  border: "6px double #2563eb",
+  padding: "18px",
+  maxWidth: "1050px",
+  borderRadius: "18px",
+  background:
+    "linear-gradient(135deg, #1e1b4b 0%, #2563eb 18%, #fdf2f8 45%, #dbeafe 70%, #fef3c7 100%)",
+  color: "#0f172a",
+  border: "4px solid #d4af37",
+  boxShadow: "0 0 45px rgba(212,175,55,0.45)",
   textAlign: "center",
 };
 
-const certificateTitleStyle = {
-  color: "#111827",
-  fontSize: "42px",
+const certificateBorder = {
+  padding: "34px",
+  border: "3px double #d4af37",
+  borderRadius: "12px",
+  background:
+    "linear-gradient(135deg, rgba(255,255,255,0.96), rgba(219,234,254,0.92), rgba(250,245,255,0.95))",
+};
+
+const crestStyle = {
+  width: "70px",
+  height: "70px",
+  margin: "0 auto",
+  borderRadius: "50%",
+  background: "linear-gradient(135deg, #0f172a, #1d4ed8)",
+  color: "#d4af37",
+  border: "4px solid #d4af37",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "38px",
   fontWeight: "900",
-  marginBottom: "22px",
+  fontFamily: "Georgia, serif",
+};
+
+const estStyle = {
+  color: "#0f172a",
+  fontWeight: "800",
+  letterSpacing: "2px",
+  margin: "8px 0 0",
+};
+
+const certificateTitleStyle = {
+  color: "#0f172a",
+  fontSize: "54px",
+  fontWeight: "900",
+  letterSpacing: "6px",
+  margin: "12px 0 14px",
+  fontFamily: "Georgia, serif",
+};
+
+const certificateSubTitleStyle = {
+  color: "#b45309",
+  fontSize: "26px",
+  fontWeight: "900",
+  letterSpacing: "5px",
+  margin: "0 0 28px",
 };
 
 const certificateNameStyle = {
-  color: "#111827",
-  fontSize: "38px",
+  color: "#0f172a",
+  fontSize: "48px",
   fontWeight: "900",
-  margin: "14px 0",
+  margin: "8px 0",
+  fontFamily: "Georgia, serif",
+  fontStyle: "italic",
 };
 
 const certificateCourseStyle = {
-  color: "#111827",
-  fontSize: "24px",
+  color: "#0f172a",
+  fontSize: "26px",
   fontWeight: "900",
+  margin: "8px 0 18px",
 };
 
 const certificateTextStyle = {
-  color: "#111827",
+  color: "#0f172a",
   fontSize: "18px",
-  fontWeight: "600",
+  fontWeight: "700",
+  margin: "8px 0",
 };
 
-const certificateSchoolStyle = {
-  color: "#111827",
-  fontSize: "20px",
+const certificateInfoRow = {
+  margin: "24px auto",
+  display: "flex",
+  justifyContent: "center",
+  gap: "28px",
+  flexWrap: "wrap",
+};
+
+const certificateInfoItem = {
+  minWidth: "155px",
+  padding: "10px 16px",
+  borderLeft: "3px solid #d4af37",
+  borderRight: "3px solid #d4af37",
+  color: "#0f172a",
   fontWeight: "800",
 };
 
+const certificateBottom = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "18px",
+  flexWrap: "wrap",
+  marginTop: "18px",
+};
+
+const sealStyle = {
+  width: "120px",
+  height: "120px",
+  borderRadius: "50%",
+  background: "linear-gradient(135deg, #f59e0b, #fef3c7, #b45309)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "3px solid #92400e",
+};
+
+const sealInnerStyle = {
+  width: "90px",
+  height: "90px",
+  borderRadius: "50%",
+  border: "2px dashed #0f172a",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#0f172a",
+  fontSize: "12px",
+  fontWeight: "900",
+  textTransform: "uppercase",
+};
+
+const certificateSchoolStyle = {
+  color: "#0f172a",
+  fontSize: "32px",
+  fontWeight: "900",
+  margin: "0 0 8px",
+  fontFamily: "Georgia, serif",
+};
+
 const certificateSmallStyle = {
-  color: "#111827",
+  color: "#0f172a",
   fontSize: "16px",
-  fontWeight: "700",
+  fontWeight: "800",
+};
+
+const signatureBox = {
+  minWidth: "190px",
+  textAlign: "center",
+};
+
+const signatureText = {
+  color: "#0f172a",
+  fontSize: "24px",
+  fontFamily: "cursive",
+  margin: "0",
+};
+
+const signatureLine = {
+  height: "2px",
+  background: "#d4af37",
+  margin: "4px auto 6px",
+  width: "180px",
 };
 
 const blueButton = {
@@ -475,6 +681,13 @@ const redButton = {
 };
 
 const blueText = { color: "#60a5fa", fontWeight: "800" };
+
+const smallText = {
+  color: "#cbd5e1",
+  fontSize: "14px",
+  wordBreak: "break-word",
+  fontWeight: "700",
+};
 
 const badgeStyle = {
   display: "inline-block",
