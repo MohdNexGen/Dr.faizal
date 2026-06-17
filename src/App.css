@@ -1,0 +1,164 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  color: white;
+}
+
+.page {
+  text-align: center;
+  padding: 40px;
+}
+
+h1 {
+  font-size: 4rem;
+  margin-bottom: 40px;
+}
+
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.navbar a:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.back-btn,
+.hero-buttons button,
+.form-box button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.back-btn:hover,
+.hero-buttons button:hover,
+.form-box button:hover {
+  background: #1d4ed8;
+}
+
+.hero {
+  margin-top: 70px;
+}
+
+.hero h2 {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.hero p {
+  font-size: 20px;
+  max-width: 700px;
+  margin: auto;
+  line-height: 1.6;
+}
+
+.hero-buttons {
+  margin-top: 30px;
+}
+
+.hero-buttons button {
+  margin: 10px;
+  font-size: 18px;
+}
+
+.programs-section {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  flex-wrap: wrap;
+  margin-top: 80px;
+}
+
+.card {
+  width: 250px;
+  padding: 25px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  background: rgba(255,255,255,0.18);
+}
+
+.form-box {
+  max-width: 520px;
+  margin: 40px auto;
+  padding: 35px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+}
+
+.form-box input,
+.form-box select {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 17px;
+  box-sizing: border-box;
+}
+
+.form-box button {
+  width: 100%;
+  font-size: 17px;
+}
+
+.footer {
+  margin-top: 80px;
+  padding: 80px 20px 40px;
+  text-align: center;
+  background: linear-gradient(135deg, #0ea5e9, #2563eb, #1e3a8a);
+  position: relative;
+  overflow: hidden;
+}
+
+.wave {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  width: 200%;
+  height: 100px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  animation: waves 8s linear infinite;
+}
+
+@keyframes waves {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.footer h2 {
+  font-size: 32px;
+}
+
+.footer p {
+  font-size: 16px;
+}
